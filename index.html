@@ -50,12 +50,12 @@
   }
   /* ===== Theme: Dim (เทา/คราม/ส้ม, ตัวอักษรดำ) ===== */
   :root[data-theme="dim"]{
-    --bg:#DDDEE1;
-    --surface:#F1F2F3;
-    --surface-2:#CBCDD2;
-    --border:#B7BAC0;
+    --bg:#9B9B9E;
+    --surface:#A9A9AA;
+    --surface-2:#8E9093;
+    --border:#808286;
     --text:#201F22;
-    --text-muted:#5B5D63;
+    --text-muted:#2E2F32;
     --accent:#FF8A34;
     --accent-strong:#E96F16;
     --accent-soft:#FFE3C2;
@@ -71,12 +71,12 @@
     --stale:#7A4EB5;
     --stale-soft:#DDD0EC;
     --shadow: 0 1px 2px rgba(20,20,30,.15), 0 8px 24px -12px rgba(20,20,30,.35);
-    --side-bg:#2B3A67;
+    --side-bg:#1E2948;
     --side-text:#E7EAF5;
     --side-text-muted:#AAB3D6;
-    --side-active:#20294D;
+    --side-active:#161D36;
     --side-accent:#FF8A34;
-    --side-border:#20294D;
+    --side-border:#161D36;
     --radius:10px;
   }
   /* ===== Theme: Dark (ดำ/เทาเข้ม/ส้ม, ตัวอักษรขาว) ===== */
@@ -271,6 +271,10 @@
   .badge-info{background:var(--info-soft);color:var(--info);}
   .badge-neutral{background:var(--surface-2);color:var(--text-muted);}
   .badge-stale{background:var(--stale-soft);color:var(--stale);}
+  .badge-out{background:#000;color:#fff;}
+  tr.row-discontinued{opacity:.4;}
+  .discontinue-check{display:flex;align-items:center;gap:4px;margin-top:4px;font-size:10.5px;font-weight:400;color:var(--text-muted);white-space:nowrap;cursor:pointer;}
+  .discontinue-check input{cursor:pointer;width:13px;height:13px;margin:0;}
   .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
 
   .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
@@ -1028,6 +1032,7 @@ function computeRecentOutStats(){
  */
 function stockStatus(stock, stickerId, recentStats){
   stock = Number(stock)||0;
+  if(stock<=0) return 'out';
   const info = recentStats ? recentStats[stickerId] : null;
   const lastAt = info?.lastAt;
   const daysSinceOut = lastAt ? (Date.now() - new Date(lastAt).getTime())/86400000 : Infinity;
@@ -1041,6 +1046,7 @@ function stockStatus(stock, stickerId, recentStats){
   return 'critical';
 }
 function badgeForStatus(st){
+  if(st==='out') return `<span class="badge badge-out"><span class="dot"></span>หมด</span>`;
   if(st==='critical') return `<span class="badge badge-critical"><span class="dot"></span>วิกฤต</span>`;
   if(st==='warning') return `<span class="badge badge-warning"><span class="dot"></span>ระวัง</span>`;
   if(st==='stale') return `<span class="badge badge-stale"><span class="dot"></span>ค้าง</span>`;
@@ -1077,7 +1083,7 @@ function renderNav(){
 function criticalCountBadge(){
   const stockMap = computeStockMap();
   const recentStats = computeRecentOutStats();
-  const n = activeStickers().filter(s=>{ const st = stockStatus(stockMap[s.id]?.stock||0, s.id, recentStats); return st==='critical'||st==='warning'; }).length;
+  const n = activeStickers().filter(s=>{ if(s.discontinued) return false; const st = stockStatus(stockMap[s.id]?.stock||0, s.id, recentStats); return st==='critical'||st==='warning'||st==='out'; }).length;
   return n>0 ? `<span class="nav-badge">${n}</span>` : '';
 }
 function goTo(viewId, opts){
@@ -1138,8 +1144,9 @@ function renderDashboard(){
   const recentStats = computeRecentOutStats();
   const stickers = activeStickers();
   const criticalList = stickers
+    .filter(s=>!s.discontinued)
     .map(s=>({s, stock: stockMap[s.id]?.stock||0, status: stockStatus(stockMap[s.id]?.stock||0, s.id, recentStats)}))
-    .filter(x=>x.status==='critical'||x.status==='warning')
+    .filter(x=>x.status==='critical'||x.status==='warning'||x.status==='out')
     .sort((a,b)=> a.stock - b.stock);
   const pendingPOs = cache.purchaseOrders.filter(p=>p.status==='pending');
   const pendingPOValue = pendingPOs.reduce((s,p)=> s + (Number(p.total)||0), 0);
@@ -1312,7 +1319,11 @@ function renderStock(){
     const q = stockSearch.trim().toLowerCase();
     list = list.filter(s=> (s.name||'').toLowerCase().includes(q) || (s.code||'').toLowerCase().includes(q));
   }
-  list = list.slice().sort((a,b)=> stockSortDir==='asc' ? (a.code||'').localeCompare(b.code||'') : (b.code||'').localeCompare(a.code||''));
+  list = list.slice().sort((a,b)=>{
+    const da = a.discontinued?1:0, db = b.discontinued?1:0;
+    if(da!==db) return da-db;
+    return stockSortDir==='asc' ? (a.code||'').localeCompare(b.code||'') : (b.code||'').localeCompare(a.code||'');
+  });
   el.innerHTML = `
     <div class="toolbar">
       <div class="toolbar-left">
@@ -1324,18 +1335,26 @@ function renderStock(){
     <div class="card">
       ${list.length===0 ? `<div class="empty-state">${icon('stock',30)}<div>ยังไม่มีชนิดสติ๊กเกอร์ — ลองนำเข้าแคตตาล็อกที่หน้า "ตั้งค่า/ข้อมูลอ้างอิง" หรือเพิ่มเอง</div></div>` : `
       <div class="table-wrap"><table><thead><tr>
-        <th class="left"><button type="button" class="sort-th-btn" id="stockSortBtn" title="เรียงตามรหัส A-Z / Z-A">รหัส <span class="sort-arrow">${stockSortDir==='asc'?'▲':'▼'}</span></button></th><th></th><th class="left" style="padding-left:46px;">ชื่อสติ๊กเกอร์</th><th>สถานะ</th><th>คงเหลือ (ดวง)</th><th>เบิกใช้ (10 วันล่าสุด)</th>
+        <th></th><th class="left"><button type="button" class="sort-th-btn" id="stockSortBtn" title="เรียงตามรหัส A-Z / Z-A">รหัส <span class="sort-arrow">${stockSortDir==='asc'?'▲':'▼'}</span></button></th><th class="left" style="padding-left:46px;">ชื่อสติ๊กเกอร์</th><th>สถานะ</th><th>คงเหลือ (ดวง)</th><th>เบิกใช้ (10 วันล่าสุด)</th>
         <th>ต้นทุนเฉลี่ย/ดวง</th>
       </tr></thead><tbody>
         ${list.map(s=>{
           const st = stockMap[s.id]||{stock:0,avgCost:0};
           const status = stockStatus(st.stock, s.id, recentStats);
           const eq = sheetsEq(st.stock, s);
-          return `<tr>
-            <td class="left mono" style="font-size:12px;">${esc(s.code||'-')}</td>
+          return `<tr class="${s.discontinued?'row-discontinued':''}">
             <td style="white-space:nowrap;">
-              <button class="btn btn-ghost btn-sm btn-icon" data-adjust="${s.id}" title="ปรับปรุงสต็อก">${icon('adjustpm',15)}</button>
-              <button class="btn btn-ghost btn-sm btn-icon" data-edit-sticker="${s.id}" title="แก้ไข">${icon('edit',15)}</button>
+              <div style="display:flex;flex-direction:column;gap:2px;">
+                <button class="btn btn-ghost btn-sm btn-icon" data-edit-sticker="${s.id}" title="แก้ไข">${icon('edit',15)}</button>
+                <button class="btn btn-ghost btn-sm btn-icon" data-adjust="${s.id}" title="ปรับปรุงสต็อก">${icon('adjustpm',15)}</button>
+              </div>
+            </td>
+            <td class="left mono" style="font-size:12px;">
+              ${esc(s.code||'-')}
+              <label class="discontinue-check">
+                <input type="checkbox" data-discontinue="${s.id}" ${s.discontinued?'checked':''}>
+                ยกเลิกผลิต
+              </label>
             </td>
             <td class="left" style="font-weight:600;">
               <div style="display:flex;align-items:center;gap:10px;">
@@ -1360,6 +1379,20 @@ function renderStock(){
   el.querySelectorAll('[data-edit-sticker]').forEach(b=> b.addEventListener('click', ()=> openStickerModal(stickerById(b.dataset.editSticker))));
   el.querySelectorAll('[data-edit-thumb]').forEach(b=> b.addEventListener('click', ()=> openStickerModal(stickerById(b.dataset.editThumb), {focusImage:true})));
   el.querySelectorAll('[data-adjust]').forEach(b=> b.addEventListener('click', ()=>{ if(!requireActiveUser()) return; openAdjustModal(stickerById(b.dataset.adjust)); }));
+  el.querySelectorAll('[data-discontinue]').forEach(cb=> cb.addEventListener('change', async ()=>{
+    const id = cb.dataset.discontinue;
+    const checking = cb.checked;
+    const s = stickerById(id);
+    const ok = await confirmDialog(
+      checking ? 'ยืนยันยกเลิกผลิต' : 'ยืนยันเลิกสถานะยกเลิกผลิต',
+      checking
+        ? `ต้องการยกเลิกผลิต "${s?.name||''}" หรือไม่? รายการจะถูกย้ายไปไว้ด้านล่างสุดของตาราง และแสดงเป็นสีจาง`
+        : `ต้องการยกเลิกสถานะ "ยกเลิกผลิต" ของ "${s?.name||''}" และให้กลับมาแสดงตามปกติหรือไม่?`
+    );
+    if(!ok){ cb.checked = !checking; return; }
+    await updateDoc('stickers', id, {discontinued: checking});
+    renderStock();
+  }));
 }
 
 function openStickerModal(existing, opts){
