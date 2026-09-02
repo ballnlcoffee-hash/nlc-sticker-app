@@ -1,0 +1,2811 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คลังสติ๊กเกอร์ NLCOFFEE</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+  (function(){
+    var m = 'light';
+    try{ var saved = localStorage.getItem('nlc_theme_mode'); if(saved==='light'||saved==='dim'||saved==='dark') m = saved; }catch(e){}
+    document.documentElement.setAttribute('data-theme', m);
+  })();
+</script>
+<style>
+  /* ===== Theme: Light (ครีม/ฟ้า/ส้ม, ตัวอักษรดำ) — ค่าเริ่มต้น ===== */
+  :root{
+    --bg:#FBF3E7;
+    --surface:#FFFFFF;
+    --surface-2:#F3E7D2;
+    --border:#E6D6B8;
+    --text:#241F1A;
+    --text-muted:#726657;
+    --accent:#FF8A34;
+    --accent-strong:#E96F16;
+    --accent-soft:#FFE3C2;
+    --accent-contrast:#FFFFFF;
+    --good:#2E9E5B;
+    --good-soft:#DEF3E4;
+    --warning:#B4790E;
+    --warning-soft:#FBEED0;
+    --critical:#D64545;
+    --critical-soft:#FBE1E1;
+    --info:#2B7FBE;
+    --info-soft:#DDEEFB;
+    --stale:#8B5CC7;
+    --stale-soft:#EAE0F7;
+    --shadow: 0 1px 2px rgba(40,30,10,.08), 0 8px 24px -12px rgba(40,30,10,.22);
+    --side-bg:#1C6FA6;
+    --side-text:#F5FAFF;
+    --side-text-muted:#BFE0F5;
+    --side-active:#155887;
+    --side-accent:#FF8A34;
+    --side-border:#155887;
+    --radius:10px;
+  }
+  /* ===== Theme: Dim (เทา/คราม/ส้ม, ตัวอักษรดำ) ===== */
+  :root[data-theme="dim"]{
+    --bg:#DDDEE1;
+    --surface:#F1F2F3;
+    --surface-2:#CBCDD2;
+    --border:#B7BAC0;
+    --text:#201F22;
+    --text-muted:#5B5D63;
+    --accent:#FF8A34;
+    --accent-strong:#E96F16;
+    --accent-soft:#FFE3C2;
+    --accent-contrast:#FFFFFF;
+    --good:#2E9E5B;
+    --good-soft:#D6EBDD;
+    --warning:#A66A0C;
+    --warning-soft:#EFE1C4;
+    --critical:#C23B3B;
+    --critical-soft:#F1D8D8;
+    --info:#3B4E8F;
+    --info-soft:#DADFF0;
+    --stale:#7A4EB5;
+    --stale-soft:#DDD0EC;
+    --shadow: 0 1px 2px rgba(20,20,30,.15), 0 8px 24px -12px rgba(20,20,30,.35);
+    --side-bg:#2B3A67;
+    --side-text:#E7EAF5;
+    --side-text-muted:#AAB3D6;
+    --side-active:#20294D;
+    --side-accent:#FF8A34;
+    --side-border:#20294D;
+    --radius:10px;
+  }
+  /* ===== Theme: Dark (ดำ/เทาเข้ม/ส้ม, ตัวอักษรขาว) ===== */
+  :root[data-theme="dark"]{
+    --bg:#101113;
+    --surface:#1A1B1E;
+    --surface-2:#232428;
+    --border:#333438;
+    --text:#F2F2F0;
+    --text-muted:#9EA0A6;
+    --accent:#FF8A34;
+    --accent-strong:#FFA35C;
+    --accent-soft:#3A2612;
+    --accent-contrast:#1A1108;
+    --good:#4CC080;
+    --good-soft:#173324;
+    --warning:#E2B24F;
+    --warning-soft:#3A2E12;
+    --critical:#E6716B;
+    --critical-soft:#3A1C1A;
+    --info:#7C93D6;
+    --info-soft:#1E2438;
+    --stale:#B08FE0;
+    --stale-soft:#2C2440;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    --side-bg:#0B0C0E;
+    --side-text:#F2F2F0;
+    --side-text-muted:#9EA0A6;
+    --side-active:#1E1F22;
+    --side-accent:#FF8A34;
+    --side-border:#1E1F22;
+    --radius:10px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  ::-webkit-scrollbar-button{display:none;width:0;height:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Prompt',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:14.5px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:'Prompt',sans-serif;margin:0;text-wrap:balance;font-weight:600;}
+  table{font-variant-numeric:tabular-nums;}
+  .mono{font-family:'Prompt',sans-serif;}
+  button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+  a{color:var(--accent-strong);}
+  ::selection{background:var(--accent-soft);}
+
+  .app{display:flex;min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:242px;flex:none;background:var(--side-bg);color:var(--side-text);
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+    border-right:1px solid var(--side-border);
+  }
+  .brand{padding:20px 18px 14px;border-bottom:1px solid var(--side-border);}
+  .brand-name{font-family:'Prompt',sans-serif;font-weight:700;font-size:17px;letter-spacing:.2px;color:var(--side-text);}
+  .brand-sub{font-size:12px;color:var(--side-text-muted);margin-top:2px;}
+  .nav{flex:1;padding:12px 10px;overflow-y:auto;}
+  .nav-item{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:right;
+    padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--side-text-muted);
+    cursor:pointer;font-size:14px;margin-bottom:2px;transition:background .12s,color .12s;
+    flex-direction:row-reverse;justify-content:flex-end;
+  }
+  .nav-item svg{width:18px;height:18px;flex:none;opacity:.85;}
+  .nav-item:hover{background:var(--side-active);color:var(--side-text);}
+  .nav-item.active{background:var(--side-active);color:var(--side-accent);font-weight:600;}
+  .nav-item .nav-badge{
+    margin-inline-start:auto;background:var(--critical);color:#fff;font-size:11px;font-weight:700;
+    border-radius:999px;padding:1px 7px;min-width:18px;text-align:center;
+  }
+  .sidebar-footer{padding:12px 16px 16px;border-top:1px solid var(--side-border);}
+  .theme-switch{display:flex;gap:3px;background:rgba(0,0,0,.18);border-radius:8px;padding:3px;margin-bottom:10px;}
+  .theme-btn{position:relative;flex:1;border:none;background:transparent;color:var(--side-text-muted);font-family:'Prompt',sans-serif;font-size:11.5px;font-weight:600;padding:6px 4px 6px 14px;border-radius:6px;cursor:pointer;transition:color .15s;}
+  .theme-btn.active{color:#fff;}
+  .theme-btn.active::before{content:'';position:absolute;top:6px;left:4px;width:6px;height:6px;border-radius:50%;background:var(--side-accent);}
+  .sync-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--side-text-muted);}
+  .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--good);flex:none;}
+  .sync-dot.offline{background:var(--critical);}
+  .sync-dot.pulse{animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  /* ---------- Main ---------- */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:16px 26px;border-bottom:1px solid var(--border);background:var(--surface);
+    position:sticky;top:0;z-index:5;
+  }
+  .topbar h2{font-size:19px;}
+  .topbar-sub{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+  .topbar-actions{display:flex;align-items:center;gap:10px;}
+  .user-field{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-muted);}
+  .user-field input{width:120px;}
+  .content{padding:22px 26px 60px;max-width:1280px;width:100%;margin:0 auto;}
+  .view[hidden]{display:none;}
+
+  /* ---------- Basics ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;border-radius:8px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text);padding:8px 14px;font-size:13.5px;font-weight:600;
+    cursor:pointer;transition:background .12s,border-color .12s,transform .05s;white-space:nowrap;
+  }
+  .btn:hover{border-color:var(--accent);color:var(--accent-strong);}
+  .btn:active{transform:translateY(1px);}
+  .btn svg{width:15px;height:15px;}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast);}
+  .btn-primary:hover{background:var(--accent-strong);border-color:var(--accent-strong);color:var(--accent-contrast);}
+  .btn-ghost{background:transparent;border-color:transparent;}
+  .btn-ghost:hover{background:var(--surface-2);}
+  .btn-danger{color:var(--critical);}
+  .btn-danger:hover{border-color:var(--critical);}
+  .btn-sm{padding:5px 10px;font-size:12.5px;border-radius:7px;}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;}
+  /* ปุ่มไอคอนล้วน (แก้ไข/ลบ/ปรับสต็อก ฯลฯ) ขยายพื้นที่กดจริงด้วย ::after แบบมองไม่เห็น
+     โดยไม่ขยายขนาดไอคอน/เค้าโครงที่มองเห็น เพื่อไม่ให้กระทบความสูงแถวตารางที่จัดวางไว้แล้ว */
+  .btn-icon{padding:8px;position:relative;}
+  .btn-icon::after{content:'';position:absolute;inset:-4px;}
+  .btn-icon+.btn-icon{margin-inline-start:4px;}
+  .thumb-btn{border:none;background:none;padding:0;cursor:pointer;border-radius:6px;line-height:0;}
+  .thumb-btn:hover{outline:2px solid var(--accent);outline-offset:1px;}
+  @media (max-width:640px){
+    .thumb-btn img,.thumb-btn>div{width:56px!important;height:56px!important;}
+  }
+  #f_image_preview:focus{outline:2px solid var(--accent);outline-offset:2px;border-color:var(--accent);}
+
+  .input,.select,textarea.input{
+    width:100%;padding:8px 10px;border-radius:7px;border:1px solid var(--border);
+    background:var(--surface);color:var(--text);outline:none;
+  }
+  .input:focus,.select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .input-error{border-color:var(--critical) !important;box-shadow:0 0 0 3px var(--critical-soft) !important;animation:input-shake .35s;}
+  @keyframes input-shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+  .user-chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:6px 8px 6px 14px;font-size:13px;font-weight:600;}
+  .user-chip button{border:none;background:var(--border);color:var(--text-muted);width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .user-chip button:hover{background:var(--critical);color:#fff;}
+  label{display:block;font-size:12.5px;color:var(--text-muted);margin-bottom:4px;font-weight:600;}
+  .field{margin-bottom:12px;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .field-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  @media (max-width:640px){.field-row,.field-row3{grid-template-columns:1fr;}}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+  .card-pad{padding:18px 20px;}
+  .section-title{font-size:15.5px;margin-bottom:2px;}
+  .section-desc{font-size:12.5px;color:var(--text-muted);margin-bottom:14px;}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+  .stat-grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  @media (max-width:980px){.stat-grid{grid-template-columns:repeat(2,1fr);}.stat-grid.cols-3{grid-template-columns:repeat(2,1fr);}}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);}
+  .stat-label{font-size:12px;color:var(--text-muted);font-weight:600;}
+  .stat-value{font-family:'Prompt',sans-serif;font-size:24px;font-weight:700;margin-top:4px;}
+  .stat-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
+  .stat-card.accentline{border-top:3px solid var(--accent);}
+  .stat-card.criticalline{border-top:3px solid var(--critical);}
+  .stat-card.goodline{border-top:3px solid var(--good);}
+  .stat-card.infoline{border-top:3px solid var(--info);}
+
+  .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;}
+  @media (max-width:980px){.grid-2{grid-template-columns:1fr;}}
+
+  .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);}
+  table{width:100%;border-collapse:collapse;background:var(--surface);font-size:13.5px;}
+  thead th{
+    text-align:right;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--text-muted);
+    background:var(--surface-2);padding:10px 12px;font-weight:700;white-space:nowrap;border-bottom:1px solid var(--border);
+  }
+  thead th:first-child{text-align:right;}
+  tbody td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  td,th{text-align:right;}
+  td.left,th.left{text-align:right;}
+  .num{font-variant-numeric:tabular-nums;}
+  .sort-th-btn{border:none;background:none;padding:0;margin:0;cursor:pointer;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;display:inline-flex;align-items:center;gap:4px;}
+  .sort-th-btn:hover{color:var(--accent);}
+  .sort-arrow{font-size:9px;}
+  .subtle{color:var(--text-muted);font-size:11.5px;}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .badge-ok{background:var(--good-soft);color:var(--good);}
+  .badge-warning{background:var(--warning-soft);color:var(--warning);}
+  .badge-critical{background:var(--critical-soft);color:var(--critical);}
+  .badge-info{background:var(--info-soft);color:var(--info);}
+  .badge-neutral{background:var(--surface-2);color:var(--text-muted);}
+  .badge-stale{background:var(--stale-soft);color:var(--stale);}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+  .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .toolbar-left{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  .search{width:220px;}
+
+  .empty-state{padding:40px 20px;text-align:center;color:var(--text-muted);}
+  .empty-state svg{width:34px;height:34px;margin-bottom:8px;opacity:.5;}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;min-width:0;}
+  .tab{padding:9px 14px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:13.5px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;flex:none;}
+  .tab.active{color:var(--accent-strong);border-bottom-color:var(--accent);}
+
+  .line-items{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:8px;}
+  .line-item-row{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr auto;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);align-items:end;background:var(--surface);}
+  .line-item-row:last-child{border-bottom:none;}
+  .line-item-row.head{background:var(--surface-2);padding:8px 12px;font-size:11.5px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em;align-items:center;}
+  .line-item-row.receive-cols{grid-template-columns:1.8fr 1.3fr .9fr 1fr auto;}
+  .line-item-row.po-cols{grid-template-columns:40px 1.6fr .8fr .9fr 1.2fr .9fr auto;}
+  .li-label{display:none;}
+  @media (max-width:760px){
+    .line-item-row{grid-template-columns:1fr!important;}
+    .line-item-row.head{display:none;}
+    .li-label{display:block;font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-bottom:4px;}
+    .li-remove{display:flex;justify-content:flex-end;}
+  }
+  .amount-col{text-align:left;font-weight:600;padding-bottom:8px;}
+  .line-item-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface-2);gap:12px;flex-wrap:wrap;}
+  .total-line{font-family:'Prompt',sans-serif;font-weight:700;font-size:16px;}
+
+  .line-card{border-bottom:1px solid var(--border);padding:10px 12px;background:var(--surface);display:flex;gap:10px;align-items:flex-end;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .line-card:last-child{border-bottom:none;}
+  .line-card select.select{flex:1 1 220px;min-width:180px;}
+  .line-card > [data-remove-line]{flex:none;}
+  .mini-field{min-width:110px;flex:none;}
+  .mini-field label{margin-bottom:3px;white-space:nowrap;}
+  .mini-readout{font-size:12.5px;color:var(--text-muted);align-self:center;padding-bottom:8px;flex:none;white-space:nowrap;}
+  .mini-readout b{color:var(--text);}
+  .unit-toggle{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;flex:none;}
+  .unit-toggle .seg{padding:8px 12px;border:none;background:var(--surface);color:var(--text-muted);font-weight:600;font-size:12.5px;cursor:pointer;}
+  .unit-toggle .seg + .seg{border-inline-start:1px solid var(--border);}
+  .unit-toggle .seg.active{background:var(--accent);color:var(--accent-contrast);}
+  .chk{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-muted);padding-bottom:9px;cursor:pointer;user-select:none;}
+  .chk input{width:auto;}
+
+  .stock-hint{font-size:11.5px;color:var(--text-muted);margin-top:3px;}
+  .stock-hint.warn{color:var(--critical);font-weight:600;}
+
+  /* modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(15,10,25,.5);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+  .modal-backdrop[hidden]{display:none;}
+  .modal{background:var(--surface);border-radius:14px;box-shadow:var(--shadow);width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border:1px solid var(--border);}
+  .modal.modal-lg{max-width:860px;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2;}
+  .modal-body{padding:18px 20px;}
+  .modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--surface);flex-wrap:wrap;}
+
+  .toast-wrap{position:fixed;bottom:20px;left:20px;z-index:80;display:flex;flex-direction:column;gap:8px;}
+  .toast{background:var(--side-bg);color:var(--side-text);padding:10px 16px;border-radius:8px;font-size:13.5px;box-shadow:var(--shadow);animation:toastin .15s ease-out;}
+  @keyframes toastin{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .usage-bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;}
+  .usage-bar-row .name{width:120px;flex:none;font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .usage-bar-track{flex:1;height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden;}
+  .usage-bar-fill{height:100%;background:var(--accent);border-radius:99px;}
+  .usage-bar-val{width:56px;flex:none;text-align:left;font-size:12px;color:var(--text-muted);}
+
+  .kv-list{display:flex;flex-direction:column;gap:9px;}
+  .kv-row{display:flex;justify-content:space-between;font-size:13px;}
+  .kv-row .k{color:var(--text-muted);}
+  .kv-row .v{font-weight:600;}
+
+  .banner{display:flex;gap:10px;align-items:flex-start;background:var(--warning-soft);color:var(--warning);border:1px solid var(--warning);border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;}
+  .banner.info{background:var(--info-soft);color:var(--info);border-color:var(--info);}
+  .banner svg{width:18px;height:18px;flex:none;margin-top:1px;}
+  .hamburger{display:none;}
+  .sidebar-backdrop{display:none;}
+  @media (max-width:880px){
+    .app{overflow-x:hidden;}
+    .sidebar{
+      position:fixed;left:0;top:0;bottom:0;height:100vh;z-index:40;width:250px;
+      transform:translateX(-100%);transition:transform .2s;box-shadow:0 0 28px rgba(0,0,0,.35);
+    }
+    .sidebar.open{transform:translateX(0);}
+    .sidebar-backdrop{
+      display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:39;
+      opacity:0;pointer-events:none;transition:opacity .2s;
+    }
+    .sidebar-backdrop.open{opacity:1;pointer-events:auto;}
+    .hamburger{display:inline-flex;}
+    .content{padding:18px 14px 60px;}
+    .topbar{padding:12px 14px;}
+    .stat-grid{grid-template-columns:1fr 1fr;}
+    .stat-grid.cols-3{grid-template-columns:1fr 1fr;}
+  }
+  @media (max-width:420px){
+    .stat-grid,.stat-grid.cols-3{grid-template-columns:1fr;}
+  }
+
+  /* Print / image-export layout — styling is always-on (scoped to #printArea,
+     which stays display:none until .printing or .capturing shows it), so the
+     exact same look is used for browser printing and for the "save as image"
+     capture on mobile. */
+  #printArea{display:none;}
+  #printArea{
+    font-family:'Prompt',sans-serif;color:#1B1B2F;padding:14mm;max-width:210mm;margin:0 auto;background:#fff;
+  }
+  .doc-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #241F1A;padding-bottom:12px;margin-bottom:18px;}
+  .doc-head h1{font-size:19px;margin:0 0 4px;color:#241F1A;}
+  .doc-head .brandline{font-size:12px;color:#555;}
+  .doc-meta{text-align:left;font-size:12.5px;}
+  .doc-meta div{margin-bottom:2px;}
+  .doc-title-tag{font-family:'Prompt',sans-serif;font-size:22px;font-weight:700;text-align:left;color:#E96F16;}
+  table.print-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12.5px;}
+  table.print-table th,table.print-table td{border:1px solid #999;padding:6px 8px;}
+  table.print-table th{background:#FFE3C2;text-align:right;}
+  .print-total{text-align:left;font-size:15px;font-weight:700;margin-bottom:6px;}
+  .print-subtotal{text-align:left;font-size:12.5px;color:#555;margin-bottom:3px;}
+  .print-note-box{font-size:12px;color:#555;margin-bottom:20px;}
+  .sign-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:50px;font-size:12.5px;text-align:center;}
+  .sign-line{border-top:1px solid #333;margin-top:40px;padding-top:6px;}
+  /* ใบตรวจนับสต็อค — บีบให้พอดี 1 หน้า A4 แม้มีหลายสิบรายการ */
+  #printArea:has(.count-sheet){padding:8mm 10mm;}
+  .count-sheet .doc-head{margin-bottom:10px;padding-bottom:8px;}
+  .count-sheet table.print-table th,.count-sheet table.print-table td{padding:3px 6px;font-size:10px;}
+  .count-sheet .sign-grid{margin-top:16px;}
+  .count-sheet .sign-line{margin-top:22px;}
+  @page{size:A4;margin:10mm;}
+  @media print{
+    body.printing > .app{display:none;}
+    body.printing > #printArea{display:block;}
+  }
+  /* Off-screen render used only to rasterize #printArea into a PNG (for
+     mobile "save as image", where the print dialog is unreliable). */
+  body.capturing > #printArea{display:block;position:fixed;left:-99999px;top:0;width:794px;}
+  /* รูปแบบ "สำหรับมือถือ" — แคบลง ตัวอักษรใหญ่ขึ้น ให้ดูสบายตาบนจอโทรศัพท์โดยไม่ต้องซูม
+     (ต่างจากรูปแบบ A4 ที่สัดส่วนตรงกับกระดาษพิมพ์จริง) */
+  body.capturing > #printArea.mobile-doc{width:480px;}
+  #printArea.mobile-doc{padding:5mm 4mm;}
+  #printArea.mobile-doc .doc-head{flex-direction:column;gap:8px;}
+  #printArea.mobile-doc .doc-title-tag{font-size:18px;}
+  #printArea.mobile-doc table.print-table{font-size:12px;}
+  #printArea.mobile-doc table.print-table th,#printArea.mobile-doc table.print-table td{padding:5px 6px;white-space:normal;word-break:break-word;}
+  #printArea.mobile-doc:has(.count-sheet){padding:5mm 4mm;}
+  #printArea.mobile-doc .count-sheet table.print-table th,#printArea.mobile-doc .count-sheet table.print-table td{font-size:10.5px;padding:4px 5px;}
+  #printArea.mobile-doc .sign-grid{grid-template-columns:1fr;gap:10px;margin-top:26px;}
+  #printArea.mobile-doc .sign-line{margin-top:24px;}
+
+  /* ===== Google sign-in gate ===== */
+  .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
+  .auth-card{max-width:360px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.08);}
+  .auth-card .brand-name{font-size:20px;font-weight:700;margin-bottom:2px;}
+  .auth-card .brand-sub{color:var(--text-muted);font-size:13px;margin-bottom:24px;}
+  .auth-card .auth-desc{color:var(--text-muted);font-size:13px;margin-bottom:20px;line-height:1.6;}
+  .google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;}
+  .google-btn:hover{background:var(--surface-2);}
+  .auth-email-chip{display:inline-flex;align-items:center;gap:8px;background:var(--surface-2);border-radius:20px;padding:6px 14px;font-size:13px;margin-bottom:16px;}
+  .auth-denied-title{color:var(--critical);font-weight:700;font-size:15px;margin-bottom:8px;}
+</style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate" hidden></div>
+
+<div class="app" id="appRoot" hidden>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-name">NLCOFFEE ROASTING</div>
+      <div class="brand-sub">ระบบจัดการสติ๊กเกอร์</div>
+    </div>
+    <nav class="nav" id="navList"></nav>
+    <div class="sidebar-footer">
+      <div class="theme-switch" id="themeSwitch">
+        <button type="button" class="theme-btn" data-theme-opt="light">สว่าง</button>
+        <button type="button" class="theme-btn" data-theme-opt="dim">กลาง</button>
+        <button type="button" class="theme-btn" data-theme-opt="dark">มืด</button>
+      </div>
+      <div class="sync-row">
+        <span class="sync-dot pulse" id="syncDot"></span>
+        <span id="syncLabel">กำลังเชื่อมต่อ…</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-ghost btn-icon hamburger" id="hamburgerBtn" aria-label="เมนู">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
+        </button>
+        <div>
+          <h2 id="pageTitle">แดชบอร์ด</h2>
+          <div class="topbar-sub" id="pageSub">ภาพรวมสต็อกสติ๊กเกอร์วันนี้</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="user-field">
+          <span>ผู้ใช้งาน:</span>
+          <select class="input" id="userNameSelect"></select>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <section class="view" id="view-dashboard"></section>
+      <section class="view" id="view-stock" hidden></section>
+      <section class="view" id="view-receive" hidden></section>
+      <section class="view" id="view-issue" hidden></section>
+      <section class="view" id="view-po" hidden></section>
+      <section class="view" id="view-history" hidden></section>
+      <section class="view" id="view-stockcount" hidden></section>
+      <section class="view" id="view-docs" hidden></section>
+      <section class="view" id="view-settings" hidden></section>
+
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+<div id="printArea"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   ICONS
+========================================================= */
+const ICONS = {
+  dashboard:'<path d="M4 4h7v7H4V4Zm9 0h7v4h-7V4Zm0 7h7v9h-7v-9ZM4 14h7v6H4v-6Z" stroke-linejoin="round"/>',
+  stock:'<path d="M3 7l9-4 9 4-9 4-9-4Zm0 0v10l9 4 9-4V7M12 11v10" stroke-linejoin="round" stroke-linecap="round"/>',
+  receive:'<path d="M12 3v12m0 0 4-4m-4 4-4-4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" stroke-linecap="round" stroke-linejoin="round"/>',
+  issue:'<path d="M12 21V9m0 0 4 4m-4-4-4 4M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" stroke-linecap="round" stroke-linejoin="round"/>',
+  po:'<path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1Z"/><rect x="5" y="6" width="14" height="15" rx="1.5"/><path d="M8 11h8M8 14h8M8 17h5" stroke-linecap="round"/>',
+  history:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 3h6" stroke-linecap="round" stroke-linejoin="round"/>',
+  docs:'<path d="M7 3h7l4 4v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v4h4M9 12h6M9 15.5h6M9 8.5h2" stroke-linecap="round"/>',
+  settings:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z" stroke-linejoin="round"/>',
+  plus:'<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
+  edit:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z" stroke-linejoin="round"/>',
+  trash:'<path d="M4 7h16M9 7V4h6v3m-8 0 1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13" stroke-linecap="round" stroke-linejoin="round"/>',
+  close:'<path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>',
+  print:'<path d="M6 9V3h12v6M6 18h12M6 14h12v7H6v-7ZM6 14H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-2" stroke-linejoin="round"/>',
+  alert:'<path d="M12 9v4m0 4h.01M10.3 3.9 2.5 17.5A1.5 1.5 0 0 0 3.8 20h16.4a1.5 1.5 0 0 0 1.3-2.5L13.7 3.9a1.5 1.5 0 0 0-2.6 0Z" stroke-linejoin="round"/>',
+  box:'<path d="M21 8 12 3 3 8l9 5 9-5Zm0 0v8l-9 5-9-5V8m9 5v8" stroke-linejoin="round"/>',
+  download:'<path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16" stroke-linecap="round" stroke-linejoin="round"/>',
+  upload:'<path d="M12 21V9m0 0 4 4m-4-4-4 4M4 3h16" stroke-linecap="round" stroke-linejoin="round"/>',
+  adjust:'<path d="M4 6h10M4 12h16M4 18h7" stroke-linecap="round"/><path d="m17 4 3 2-3 2M14 16l3 2-3 2" stroke-linecap="round" stroke-linejoin="round"/>',
+  adjustpm:'<circle cx="7" cy="12" r="5.2"/><path d="M7 9.3v5.4M4.3 12h5.4" stroke-linecap="round"/><circle cx="17" cy="12" r="5.2"/><path d="M14.3 12h5.4" stroke-linecap="round"/>'
+};
+function icon(name,size=18){return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8">${ICONS[name]||''}</svg>`;}
+
+/* =========================================================
+   CATALOG SEED (from NLCoffee sticker SOP)
+========================================================= */
+const CATALOG = [
+  ['A01','Autumn Whiskey','9x13.5',9],['B01','Black Cocoa','9x10',12],['B02','Booster Powder','8x10',15],
+  ['B03','Brazil Blend','9x12.5',15],['B04','Brazil Cerrado','12x9.5',9],['B05','Brazil Santos','9x12.5',15],
+  ['C01','Colombia Decaf','12x9.5',11],['C02','Colombia Villa Maria','12x9.5',9],['C03','Costa Rica Hummingbirt','12x9.5',9],
+  ['E01','Ethiopia ShantaWene','12x9.5',9],['F01','Franc Arabica (หน้า)','9x6.7',19],['F02','Franc Arabica (หลัง)','6x7',30],
+  ['F03','Frappeเฟรบเป้','8x10',15],['F04','Fruttare','9x13.5',9],['G01','Guatemala Peach','12x9.5',9],
+  ['H01','Hondurus','12x9.5',10],['H02','HORM CHOUI','10x8',15],['L01','Laos Bolaven','6x18',11],
+  ['L02','Laos Bolaven Peabrry','12x9.5',10],['L03','Light Roast','3x6',70],['M01','Medium Mocha','2.5x2.5',204],
+  ['M02','Medium Roast','3x6',70],['M03','Milk Shake','9x13.5',9],['M04','Mokapot Blend (หน้า)','9x6.7',19],
+  ['M05','Mokapot Blend (หลัง)','6x7',30],['N01','Nutty Candy','9x13.5',9],['P01','Pop Corn','9x13.5',9],
+  ['R01','Rum','9x13.5',9],['S01','Spring Berry','9x13.5',9],['S02','Sunshine Lavender','9x13.5',9],
+  ['S03','Swisss Choco','9x13.5',9],['T01','Tanzania Orange','8x18',7],['V01','Vienna Roast (หน้า)','9x6.7',19],
+  ['V02','Vienna Roast (หลัง)','6x7',30],['W01','Winter Floral','9x13.5',9],['E02','Extreme Tea','10x10',12],
+  ['D01','สติ๊กเกอร์ตัว A','10x8',15],['D02','สติ๊กเกอร์ตัว B','10x8',15],['D03','สติ๊กเกอร์ตัว C','10x8',15],
+  ['D04','สติ๊กเกอร์ตัว D','10x8',15],['1KGE','สติ๊กเกอร์ 1 กก. Espresso','4x5',62],['1KGA','สติ๊กเกอร์ 1 กก. Arabica','4x5',62],
+  ['M06','Matcha Kyoto','4x6',62],['M06','Matcha Uji','4x6',62],['K01','Kenya Melon','8x18',7],
+  ['SH01','สติ๊กเกอร์กลม','3x3',135],['SH02','สติ๊กเกอร์กลม','3x3',135],
+].map(([code,name,sizeCm,piecesPerSheet])=>({code,name,sizeCm,piecesPerSheet}));
+
+const DEFAULT_SETTINGS = {
+  companyName:'บริษัท เอ็นแอลคอฟฟีแทรดดิ้ง จำกัด (NL Coffee Trading)',
+  printerName:'บริษัท อิมแพค พริ้นติ้ง จำกัด (Impact Printing)',
+  printerContact:'แม็ค 066-091-8649',
+  pricePerSheet:25,
+  vatRate:0.07,
+  moqMin:120,
+  moqMax:150,
+  leadTimeMinDays:4,
+  leadTimeMaxDays:7,
+  orderCycleMinDays:15,
+  orderCycleMaxDays:20,
+  stockCounterName:'คุณวิว',
+  approverName:'คุณบอน',
+  catalogImported:false,
+  stockCountCycleDays:14,
+  lastStockCountAt:'',
+  staffUsers:[],
+};
+
+/* =========================================================
+   DATA LAYER  (db capability, with local in-memory fallback)
+========================================================= */
+const COLLECTIONS = ['stickers','movements','purchaseOrders','receipts','requisitions','returns'];
+const cache = {stickers:[],movements:[],purchaseOrders:[],receipts:[],requisitions:[],returns:[], settings:{}, access:{emails:[]}};
+let dbApi = null;
+let downloadsApi = null;
+let localMode = false;
+let localSeed = 1;
+
+/* ===== ตั้งค่า Firebase — วางค่าจาก Firebase Console (Project settings > Add app > Web) แทนค่า YOUR_... ด้านล่างนี้ ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCYW3dL0SxyhjRok87R5mxR4ALPQ_klvOg",
+  authDomain: "nlcoffee-roasting.firebaseapp.com",
+  projectId: "nlcoffee-roasting",
+  storageBucket: "nlcoffee-roasting.firebasestorage.app",
+  messagingSenderId: "64019675994",
+  appId: "1:64019675994:web:9fe443b8a566ab4430d163",
+  measurementId: "G-MTEVB067BR"
+};
+const FIREBASE_NOT_CONFIGURED = firebaseConfig.apiKey === 'YOUR_API_KEY';
+/* อีเมลเจ้าของระบบ — ได้สิทธิ์เข้าใช้งานเสมอ แม้จะยังไม่ได้เพิ่มชื่อในทะเบียนผู้มีสิทธิ์เข้าถึง */
+const OWNER_EMAIL = 'ballnlcoffee@gmail.com';
+let auth = null;
+if(!FIREBASE_NOT_CONFIGURED){
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+}
+const renderListeners = new Set();
+function onDataChange(fn){renderListeners.add(fn);}
+function notify(){renderListeners.forEach(fn=>{try{fn();}catch(e){console.error(e);}});}
+function getSettings(){return {...DEFAULT_SETTINGS, ...(cache.settings||{})};}
+
+function setSync(state){
+  const dot = document.getElementById('syncDot');
+  const label = document.getElementById('syncLabel');
+  if(state==='connected'){
+    dot.className='sync-dot';
+    label.textContent='เชื่อมต่อแล้ว · ใช้งานพร้อมกันได้หลายคน';
+  } else if(state==='connecting'){
+    dot.className='sync-dot pulse';
+    label.textContent='กำลังเชื่อมต่อ…';
+  } else if(state==='offline'){
+    dot.className='sync-dot offline';
+    label.textContent='ออฟไลน์ · ข้อมูลจะไม่ถูกบันทึกถาวร';
+  } else {
+    dot.className='sync-dot offline';
+    label.textContent='เกิดข้อผิดพลาดในการเชื่อมต่อ';
+  }
+}
+
+function showAuthGate(html){
+  const gate = document.getElementById('authGate');
+  const root = document.getElementById('appRoot');
+  gate.innerHTML = html;
+  gate.hidden = false;
+  if(root) root.hidden = true;
+}
+function hideAuthGate(){
+  document.getElementById('authGate').hidden = true;
+  document.getElementById('appRoot').hidden = false;
+}
+function renderLoginScreen(){
+  showAuthGate(`
+    <div class="auth-card">
+      <div class="brand-name">NLCOFFEE ROASTING</div>
+      <div class="brand-sub">ระบบจัดการสติ๊กเกอร์</div>
+      <div class="auth-desc">เข้าสู่ระบบด้วยบัญชี Google ของคุณเพื่อใช้งานระบบ</div>
+      <button type="button" class="google-btn" id="googleSignInBtn">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.6 6 29.6 4 24 4c-7.5 0-14 4.2-17.3 10.4z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.4C29.6 35.4 26.9 36 24 36c-5.2 0-9.6-3.3-11.2-7.9l-6.5 5C9.9 39.8 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4 5.7l6.6 5.4C41.5 36 44 30.5 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+        เข้าสู่ระบบด้วย Google
+      </button>
+    </div>
+  `);
+  document.getElementById('googleSignInBtn').addEventListener('click', ()=>{
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithRedirect(provider).catch(err=>{
+      alert('เข้าสู่ระบบไม่สำเร็จ: '+err.message);
+    });
+  });
+}
+function renderDeniedScreen(user){
+  showAuthGate(`
+    <div class="auth-card">
+      <div class="brand-name">NLCOFFEE ROASTING</div>
+      <div class="auth-email-chip">${esc(user.email||'')}</div>
+      <div class="auth-denied-title">บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าใช้งาน</div>
+      <div class="auth-desc">กรุณาแจ้งผู้ดูแลระบบให้เพิ่มอีเมลนี้ในหน้า "ตั้งค่า" ก่อน จึงจะเข้าใช้งานได้</div>
+      <button type="button" class="google-btn" id="signOutBtn">ออกจากระบบ / ใช้บัญชีอื่น</button>
+    </div>
+  `);
+  document.getElementById('signOutBtn').addEventListener('click', ()=> auth.signOut());
+}
+
+let firestoreUnsubs = [];
+function stopFirestoreSync(){
+  firestoreUnsubs.forEach(fn=>{ try{ fn(); }catch(e){} });
+  firestoreUnsubs = [];
+}
+function startFirestoreSync(){
+  setSync('connected');
+  COLLECTIONS.forEach(col=>{
+    firestoreUnsubs.push(dbApi.collection(col).onSnapshot(snap=>{
+      cache[col] = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      notify();
+    }, err=>{ console.error('db error', col, err); setSync('error'); }));
+  });
+  firestoreUnsubs.push(dbApi.doc('settings/config').onSnapshot(snap=>{
+    cache.settings = snap.exists ? snap.data() : {};
+    notify();
+  }, err=>{ console.error('settings error', err); }));
+  firestoreUnsubs.push(dbApi.doc('access/allowlist').onSnapshot(snap=>{
+    cache.access = snap.exists ? snap.data() : {emails:[]};
+    notify();
+  }, err=>{ console.error('access error', err); }));
+}
+
+async function checkAccessAndBoot(user){
+  try{
+    const ref = dbApi.doc('access/allowlist');
+    const snap = await ref.get();
+    let emails = [];
+    if(!snap.exists){
+      emails = [];
+      await ref.set({emails});
+    } else {
+      emails = (snap.data().emails||[]).map(e=>String(e).toLowerCase());
+    }
+    const email = (user.email||'').toLowerCase();
+    if(email===OWNER_EMAIL.toLowerCase() || emails.includes(email)){
+      hideAuthGate();
+      startFirestoreSync();
+    } else {
+      renderDeniedScreen(user);
+    }
+  }catch(e){
+    console.error('access check failed', e);
+    renderDeniedScreen(user);
+  }
+}
+
+async function initData(){
+  setSync('connecting');
+  downloadsApi = {
+    save: async ({filename, data})=>{
+      const blob = (data instanceof Blob) ? data : new Blob([data], {type:'text/csv;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    }
+  };
+
+  if(FIREBASE_NOT_CONFIGURED){
+    localMode = true;
+    hideAuthGate();
+    setSync('offline');
+    window.__localModeWarned = true;
+    notify();
+    return;
+  }
+
+  dbApi = firebase.firestore();
+  auth.getRedirectResult().catch(err=>{
+    if(err && err.code) alert('เข้าสู่ระบบไม่สำเร็จ: '+(err.message||err.code));
+  });
+  auth.onAuthStateChanged(user=>{
+    stopFirestoreSync();
+    if(user){ checkAccessAndBoot(user); }
+    else { renderLoginScreen(); }
+  });
+}
+
+async function addDoc(col, data){
+  if(localMode){
+    const id = col+'_'+(localSeed++);
+    cache[col] = cache[col].concat([{id, ...data}]);
+    notify();
+    return id;
+  }
+  const ref = await dbApi.collection(col).add(data);
+  return ref.id;
+}
+async function updateDoc(col, id, data){
+  if(localMode){
+    cache[col] = cache[col].map(d=> d.id===id ? {...d, ...data} : d);
+    notify();
+    return;
+  }
+  await dbApi.collection(col).doc(id).update(data);
+}
+async function deleteDoc(col, id){
+  if(localMode){
+    cache[col] = cache[col].filter(d=> d.id!==id);
+    notify();
+    return;
+  }
+  await dbApi.collection(col).doc(id).delete();
+}
+async function saveSettings(patch){
+  const merged = {...getSettings(), ...patch};
+  if(localMode){ cache.settings = merged; notify(); return; }
+  await dbApi.doc('settings/config').set(merged);
+}
+
+/* =========================================================
+   HELPERS
+========================================================= */
+function uid(){return Math.random().toString(36).slice(2,9);}
+function todayIso(){return new Date().toISOString().slice(0,10);}
+function nowIso(){return new Date().toISOString();}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function thb(n){ n = Number(n)||0; return new Intl.NumberFormat('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n)+' บาท'; }
+function num(n,d=0){return new Intl.NumberFormat('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d}).format(Number(n)||0);}
+function thaiDate(isoDate){
+  if(!isoDate) return '-';
+  try{
+    const d = new Date(isoDate.length<=10 ? isoDate+'T00:00:00' : isoDate);
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist',{day:'numeric',month:'short',year:'numeric'}).format(d);
+  }catch(e){return isoDate;}
+}
+function thaiDateTime(iso){
+  if(!iso) return '-';
+  try{
+    const d = new Date(iso);
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);
+  }catch(e){return iso;}
+}
+function addDays(iso, days){
+  const d = new Date((iso||todayIso())+'T00:00:00');
+  d.setDate(d.getDate()+days);
+  return d.toISOString().slice(0,10);
+}
+function getUserName(){ return document.getElementById('userNameSelect')?.value.trim() || ''; }
+function requireActiveUser(){
+  if(getUserName()) return true;
+  toast('กรุณาเลือกผู้ใช้งานที่มุมขวาบน ก่อนบันทึกรายการ');
+  const sel = document.getElementById('userNameSelect');
+  if(sel){
+    sel.classList.add('input-error');
+    sel.focus();
+    setTimeout(()=> sel.classList.remove('input-error'), 1600);
+  }
+  return false;
+}
+function renderUserSelect(){
+  const sel = document.getElementById('userNameSelect');
+  if(!sel) return;
+  const settings = getSettings();
+  const list = settings.staffUsers||[];
+  let current = '';
+  try{ current = localStorage.getItem('nlc_sticker_username') || ''; }catch(e){}
+  if(current && !list.includes(current)) current = '';
+  sel.innerHTML = `<option value="">— เลือกผู้ใช้งาน —</option>${list.map(n=>`<option value="${esc(n)}" ${n===current?'selected':''}>${esc(n)}</option>`).join('')}`;
+  sel.value = current;
+}
+function toast(msg){
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className='toast'; el.textContent=msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{el.remove();},3200);
+}
+function nextDocNo(prefix, col){
+  const d = new Date();
+  const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  const marker = '-'+ymd+'-';
+  const countToday = cache[col].filter(x=> (x.docNo||'').includes(marker)).length;
+  return `${prefix}${marker}${String(countToday+1).padStart(3,'0')}`;
+}
+function nextStockCountDocNo(){
+  const d = new Date();
+  const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  const marker = '-'+ymd+'-';
+  const distinct = new Set(cache.movements.filter(m=> m.docType==='STOCKCOUNT' && (m.docNo||'').includes(marker)).map(m=>m.docNo));
+  return `SC${marker}${String(distinct.size+1).padStart(3,'0')}`;
+}
+function activeStickers(){return cache.stickers.filter(s=>s.active!==false);}
+function stickerById(id){return cache.stickers.find(s=>s.id===id);}
+function pps(sticker){return Number(sticker && sticker.piecesPerSheet)||0;}
+function sheetsEq(pieces, sticker){ const p=pps(sticker); return p>0 ? (pieces/p) : null; }
+function stickerLabel(s){ if(!s) return '(ไม่พบสติ๊กเกอร์)'; return s.code ? `${s.code} · ${s.name}` : s.name; }
+function stickerOptionsHtml(extra){
+  extra = extra || (()=>'');
+  return activeStickers().map(s=>`<option value="${s.id}">${esc(stickerLabel(s))}${extra(s)}</option>`).join('');
+}
+function stickerThumbHtml(s, size){
+  size = size||36;
+  if(s && s.imageUrl){
+    return `<img src="${esc(s.imageUrl)}" style="width:${size}px;height:${size}px;border-radius:6px;object-fit:cover;border:1px solid var(--border);flex:none;">`;
+  }
+  return `<div style="width:${size}px;height:${size}px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-muted);flex:none;">${icon('stock',Math.round(size*0.5))}</div>`;
+}
+/* อ่านไฟล์รูปที่ผู้ใช้เลือก แล้วครอปเป็นสี่เหลี่ยมจัตุรัสขนาดเล็ก บีบอัดเป็น JPEG ก่อนเก็บลงฐานข้อมูล */
+function readImageAsSquareDataUrl(file, size){
+  size = size||240;
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=> reject(reader.error||new Error('read failed'));
+    reader.onload = ()=>{
+      const img = new Image();
+      img.onerror = ()=> reject(new Error('image load failed'));
+      img.onload = ()=>{
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width-side)/2, sy = (img.height-side)/2;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* =========================================================
+   DERIVED: stock / cost / usage
+========================================================= */
+function computeStockMap(){
+  const map = {};
+  cache.stickers.forEach(s=>{ map[s.id] = {stock:0,totalInQty:0,totalInAmount:0,totalOutQty:0,lastAt:null}; });
+  const sorted = cache.movements.slice().sort((a,b)=> (a.at||'').localeCompare(b.at||''));
+  sorted.forEach(m=>{
+    if(!map[m.stickerId]) map[m.stickerId] = {stock:0,totalInQty:0,totalInAmount:0,totalOutQty:0,lastAt:null};
+    const r = map[m.stickerId];
+    const qty = Number(m.qty)||0;
+    if(m.type==='IN'){ r.stock += qty; r.totalInQty += qty; r.totalInAmount += qty*(Number(m.unitCost)||0); }
+    else if(m.type==='OUT'){ r.stock -= qty; r.totalOutQty += qty; }
+    else if(m.type==='ADJUST'){ r.stock += qty; }
+    else if(m.type==='RETURN'){ r.stock += qty; } // stock returned to shelf — cost basis unchanged, excluded from average-cost calc
+    r.lastAt = m.at;
+  });
+  Object.keys(map).forEach(id=>{ map[id].avgCost = map[id].totalInQty>0 ? (map[id].totalInAmount/map[id].totalInQty) : 0; });
+  return map;
+}
+function computeUsage(days){
+  const cutoff = Date.now() - days*86400000;
+  const usage = {};
+  cache.movements.forEach(m=>{
+    if(m.type!=='OUT') return;
+    if(m.at && new Date(m.at).getTime() < cutoff) return;
+    usage[m.stickerId] = (usage[m.stickerId]||0) + (Number(m.qty)||0);
+  });
+  return usage;
+}
+/** OUT usage within the half-open window (now - fromDaysAgo, now - toDaysAgo]. */
+function computeUsageWindow(fromDaysAgo, toDaysAgo){
+  const now = Date.now();
+  const start = now - fromDaysAgo*86400000;
+  const end = now - toDaysAgo*86400000;
+  const usage = {};
+  cache.movements.forEach(m=>{
+    if(m.type!=='OUT' || !m.at) return;
+    const t = new Date(m.at).getTime();
+    if(t>start && t<=end) usage[m.stickerId] = (usage[m.stickerId]||0) + (Number(m.qty)||0);
+  });
+  return usage;
+}
+function computeLastOutMap(){
+  const map = {};
+  cache.movements.forEach(m=>{
+    if(m.type!=='OUT' || !m.at) return;
+    if(!map[m.stickerId] || m.at > map[m.stickerId]) map[m.stickerId] = m.at;
+  });
+  return map;
+}
+/** Per-sticker recent OUT stats: average qty of the last 3 issues, and the date of the most recent issue. */
+function computeRecentOutStats(){
+  const bySticker = {};
+  cache.movements.forEach(m=>{
+    if(m.type!=='OUT' || !m.at) return;
+    (bySticker[m.stickerId] = bySticker[m.stickerId]||[]).push(m);
+  });
+  const map = {};
+  Object.keys(bySticker).forEach(id=>{
+    const list = bySticker[id].slice().sort((a,b)=> (b.at||'').localeCompare(a.at||''));
+    const last3 = list.slice(0,3);
+    const avg3 = last3.length ? last3.reduce((s,m)=>s+(Number(m.qty)||0),0)/last3.length : 0;
+    map[id] = {avg3, lastAt: list[0].at};
+  });
+  return map;
+}
+/**
+ * สถานะ 4 ระดับ ตามยอดคงเหลือเทียบกับค่าเฉลี่ยการเบิกใช้ 3 ครั้งล่าสุด:
+ *  - ค้าง (stale): ไม่มีการเบิกมา 30 วัน (รวมถึงไม่เคยเบิกเลย)
+ *  - ปกติ (ok): คงเหลือ > 5 เท่าของค่าเฉลี่ยเบิกใช้ 3 ครั้งล่าสุด
+ *  - ระวัง (warning): คงเหลือ > 3 เท่า (แต่ไม่เกิน 5 เท่า)
+ *  - วิกฤต (critical): คงเหลือ <= 3 เท่า หรือ คงเหลือต่ำกว่า 30 ดวง
+ */
+function stockStatus(stock, stickerId, recentStats){
+  stock = Number(stock)||0;
+  const info = recentStats ? recentStats[stickerId] : null;
+  const lastAt = info?.lastAt;
+  const daysSinceOut = lastAt ? (Date.now() - new Date(lastAt).getTime())/86400000 : Infinity;
+  if(daysSinceOut > 30) return 'stale';
+  if(stock < 30) return 'critical';
+  const avg3 = info?.avg3 || 0;
+  if(avg3<=0) return 'ok';
+  const ratio = stock/avg3;
+  if(ratio > 5) return 'ok';
+  if(ratio > 3) return 'warning';
+  return 'critical';
+}
+function badgeForStatus(st){
+  if(st==='critical') return `<span class="badge badge-critical"><span class="dot"></span>วิกฤต</span>`;
+  if(st==='warning') return `<span class="badge badge-warning"><span class="dot"></span>ระวัง</span>`;
+  if(st==='stale') return `<span class="badge badge-stale"><span class="dot"></span>ค้าง</span>`;
+  return `<span class="badge badge-ok"><span class="dot"></span>ปกติ</span>`;
+}
+
+/* =========================================================
+   NAV / ROUTING
+========================================================= */
+const NAV = [
+  {id:'dashboard', label:'แดชบอร์ด', sub:'ภาพรวมสต็อกสติ๊กเกอร์วันนี้', icon:'dashboard'},
+  {id:'stock', label:'สต็อคสติ๊กเกอร์', sub:'ชนิดสติ๊กเกอร์ ต้นทุน และยอดคงเหลือ', icon:'stock'},
+  {id:'po', label:'ใบสั่งซื้อ', sub:'สั่งซื้อสติ๊กเกอร์เพิ่มจากโรงพิมพ์ (หน่วยแผ่น)', icon:'po'},
+  {id:'receive', label:'รับสติ๊กเกอร์ (ใบรับ)', sub:'รับเข้าคลังแบบยกแผ่นหรือกรอกดวง', icon:'receive'},
+  {id:'issue', label:'เบิกสติ๊กเกอร์ (ใบเบิก)', sub:'เบิกไปแปะสินค้า เลือกหน่วยดวงหรือแผ่น', icon:'issue'},
+  {id:'stockcount', label:'ตรวจนับสต็อค', sub:'พิมพ์ใบนับสต็อค และบันทึกผลนับจริง', icon:'adjust'},
+  {id:'history', label:'ประวัติการเคลื่อนไหว', sub:'รายการรับเข้า-เบิกออก-ปรับปรุงทั้งหมด', icon:'history'},
+  {id:'docs', label:'เอกสารทั้งหมด', sub:'ใบรับ ใบเบิก ใบคืน และใบสั่งซื้อ สำหรับพิมพ์', icon:'docs'},
+  {id:'settings', label:'ตั้งค่า/ข้อมูลอ้างอิง', sub:'ราคา VAT ผู้จำหน่าย และแคตตาล็อกสติ๊กเกอร์', icon:'settings'},
+];
+let currentView = 'dashboard';
+let poPrefill = null;
+
+function renderNav(){
+  const navList = document.getElementById('navList');
+  navList.innerHTML = NAV.map(item=>{
+    const badge = item.id==='dashboard' ? criticalCountBadge() : '';
+    return `<button class="nav-item ${currentView===item.id?'active':''}" data-nav="${item.id}">
+      ${icon(item.icon,18)}<span style="flex:1;text-align:right;">${item.label}</span>${badge}
+    </button>`;
+  }).join('');
+  navList.querySelectorAll('[data-nav]').forEach(btn=> btn.addEventListener('click', ()=> goTo(btn.dataset.nav)));
+}
+function criticalCountBadge(){
+  const stockMap = computeStockMap();
+  const recentStats = computeRecentOutStats();
+  const n = activeStickers().filter(s=>{ const st = stockStatus(stockMap[s.id]?.stock||0, s.id, recentStats); return st==='critical'||st==='warning'; }).length;
+  return n>0 ? `<span class="nav-badge">${n}</span>` : '';
+}
+function goTo(viewId, opts){
+  currentView = viewId;
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+  const meta = NAV.find(n=>n.id===viewId);
+  document.getElementById('pageTitle').textContent = meta.label;
+  document.getElementById('pageSub').textContent = meta.sub;
+  document.querySelectorAll('.view').forEach(v=> v.hidden = (v.id !== 'view-'+viewId));
+  renderNav();
+  renderCurrentView(opts);
+}
+function renderCurrentView(opts){
+  if(currentView==='dashboard') renderDashboard();
+  else if(currentView==='stock') renderStock();
+  else if(currentView==='receive') renderReceive(opts);
+  else if(currentView==='issue') renderIssue();
+  else if(currentView==='po') renderPO(opts);
+  else if(currentView==='history') renderHistory();
+  else if(currentView==='stockcount') renderStockCount();
+  else if(currentView==='docs') renderDocs();
+  else if(currentView==='settings') renderSettings();
+}
+
+/* =========================================================
+   MODAL HELPERS
+========================================================= */
+function openModal(html, {large}={}){
+  const box = document.getElementById('modalBox');
+  box.className = 'modal'+(large?' modal-lg':'');
+  box.innerHTML = html;
+  document.getElementById('modalBackdrop').hidden = false;
+  box.querySelectorAll('[data-close-modal]').forEach(el=> el.addEventListener('click', closeModal));
+}
+function closeModal(){ document.getElementById('modalBackdrop').hidden = true; document.getElementById('modalBox').innerHTML=''; }
+document.getElementById('modalBackdrop').addEventListener('click', e=>{ if(e.target.id==='modalBackdrop') closeModal(); });
+function confirmDialog(title, msg){
+  return new Promise(resolve=>{
+    openModal(`
+      <div class="modal-head"><h3>${esc(title)}</h3><button class="btn btn-ghost btn-icon" data-close-modal>${icon('close',16)}</button></div>
+      <div class="modal-body"><p style="margin:0;color:var(--text-muted);">${esc(msg)}</p></div>
+      <div class="modal-foot"><button class="btn btn-ghost" id="cd_no">ยกเลิก</button><button class="btn btn-primary" id="cd_yes">ยืนยัน</button></div>
+    `);
+    document.getElementById('cd_no').addEventListener('click', ()=>{ closeModal(); resolve(false); });
+    document.getElementById('cd_yes').addEventListener('click', ()=>{ closeModal(); resolve(true); });
+    document.getElementById('modalBackdrop').addEventListener('click', function h(e){ if(e.target.id==='modalBackdrop'){ resolve(false); this.removeEventListener('click',h);} });
+  });
+}
+
+/* =========================================================
+   VIEW: DASHBOARD
+========================================================= */
+function renderDashboard(){
+  const el = document.getElementById('view-dashboard');
+  const settings = getSettings();
+  const stockMap = computeStockMap();
+  const recentStats = computeRecentOutStats();
+  const stickers = activeStickers();
+  const criticalList = stickers
+    .map(s=>({s, stock: stockMap[s.id]?.stock||0, status: stockStatus(stockMap[s.id]?.stock||0, s.id, recentStats)}))
+    .filter(x=>x.status==='critical'||x.status==='warning')
+    .sort((a,b)=> a.stock - b.stock);
+  const pendingPOs = cache.purchaseOrders.filter(p=>p.status==='pending');
+  const pendingPOValue = pendingPOs.reduce((s,p)=> s + (Number(p.total)||0), 0);
+  const recent = cache.movements.slice().sort((a,b)=> (b.at||'').localeCompare(a.at||'')).slice(0,8);
+
+  const usage30 = computeUsageWindow(30,0);
+  const usagePrev30 = computeUsageWindow(60,30);
+  const top3 = Object.entries(usage30).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const maxTop3 = top3.length ? top3[0][1] : 0;
+  const growing = stickers.map(s=>{
+    const cur = usage30[s.id]||0, prev = usagePrev30[s.id]||0;
+    return {s, cur, prev, delta: cur-prev};
+  }).filter(x=>x.cur>0 && x.delta>0).sort((a,b)=>b.delta-a.delta).slice(0,5);
+  const usage90 = computeUsage(90);
+  const lastOutMap = computeLastOutMap();
+  const stale = stickers.map(s=>({s, usage90: usage90[s.id]||0, lastOutAt: lastOutMap[s.id]||null}))
+    .sort((a,b)=>{
+      if(a.usage90!==b.usage90) return a.usage90-b.usage90;
+      return (a.lastOutAt||'').localeCompare(b.lastOutAt||'');
+    }).slice(0,5);
+
+  const lastPO = cache.purchaseOrders.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];
+  let cycleHtml = '';
+  if(lastPO){
+    const daysSince = Math.floor((Date.now() - new Date(lastPO.date+'T00:00:00').getTime())/86400000);
+    const due = daysSince >= settings.orderCycleMinDays;
+    cycleHtml = `<div class="banner ${due?'':'info'}">${icon('history',18)}<div>สั่งซื้อครั้งล่าสุดเมื่อ ${daysSince} วันที่แล้ว (${thaiDate(lastPO.date)}) — ตามรอบการสั่งซื้อของโรงพิมพ์ (${settings.orderCycleMinDays}-${settings.orderCycleMaxDays} วัน) ${due?'<b>ถึงเวลาพิจารณาสั่งซื้อรอบถัดไปแล้ว</b>':`ควรสั่งซื้อรอบถัดไปภายในอีก ${Math.max(0,settings.orderCycleMinDays-daysSince)} วัน`}</div></div>`;
+  }
+
+  const lastCount = settings.lastStockCountAt;
+  const nextCountDue = lastCount ? addDays(lastCount, settings.stockCountCycleDays) : todayIso();
+  const daysUntilCount = Math.ceil((new Date(nextCountDue+'T00:00:00') - new Date(todayIso()+'T00:00:00'))/86400000);
+  const countOverdue = !lastCount || daysUntilCount<0;
+  const countSoon = !countOverdue && daysUntilCount<=3;
+  let countBannerHtml = '';
+  if(countOverdue){
+    countBannerHtml = `<div class="banner">${icon('alert',18)}<div>${lastCount?`เลยกำหนดนับสต็อคมา ${Math.abs(daysUntilCount)} วันแล้ว`:'ยังไม่เคยบันทึกผลนับสต็อคในระบบ'} — ตามรอบไม่ควรเกิน ${settings.stockCountCycleDays} วัน <b>ควรนับสต็อคโดยเร็วที่สุด</b></div></div>`;
+  }
+
+  el.innerHTML = `
+    ${window.__localModeWarned ? `<div class="banner">${icon('alert',18)}<div>โหมดออฟไลน์: ไม่ได้เชื่อมต่อระบบฐานข้อมูลกลาง ข้อมูลที่บันทึกจะหายไปเมื่อปิดหรือรีเฟรชหน้านี้ และจะไม่ซิงค์กับผู้ใช้คนอื่น</div></div>` : ''}
+    ${cycleHtml}
+    ${countBannerHtml}
+    <div class="stat-grid cols-3">
+      <div class="stat-card criticalline">
+        <div class="stat-label">รายการใกล้/ถึงจุดวิกฤต</div>
+        <div class="stat-value">${criticalList.length} ชนิด</div>
+        <div class="stat-sub">จากทั้งหมด ${stickers.length} ชนิด</div>
+      </div>
+      <div class="stat-card infoline">
+        <div class="stat-label">ยอดสั่งซื้อค้างรับ</div>
+        <div class="stat-value">${thb(pendingPOValue)}</div>
+        <div class="stat-sub">${pendingPOs.length} ใบสั่งซื้อที่รอรับของ</div>
+      </div>
+      <div class="stat-card ${countOverdue?'criticalline':countSoon?'accentline':'goodline'}">
+        <div class="stat-label">นับสต็อคครั้งถัดไป</div>
+        <div class="stat-value">${countOverdue?'ถึงกำหนดแล้ว':thaiDate(nextCountDue)}</div>
+        <div class="stat-sub">นับล่าสุด: ${lastCount?thaiDate(lastCount):'ยังไม่เคยนับ'} · ทุก ${settings.stockCountCycleDays} วัน</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card card-pad">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+          <div>
+            <div class="section-title" style="margin-top:0;">จุดวิกฤต / ใกล้ถึงจุดสั่งซื้อ</div>
+            <div class="section-desc">รายการที่สต็อกต่ำกว่าหรือใกล้ถึงจุดสั่งซื้อขั้นต่ำ ควรพิจารณาสั่งซื้อเพิ่ม</div>
+          </div>
+          ${criticalList.length>0?`<button class="btn btn-primary btn-sm" id="dashCriticalPoBtn" style="flex:none;">${icon('plus',14)}สั่งซื้อสินค้าวิกฤต</button>`:''}
+        </div>
+        ${criticalList.length===0 ? `<div class="empty-state">${icon('box',30)}<div>ยังไม่มีรายการที่ใกล้จุดวิกฤตในตอนนี้</div></div>` : `
+        <div class="table-wrap"><table><thead><tr>
+          <th class="left">สติ๊กเกอร์</th><th>คงเหลือ</th><th>จุดสั่งซื้อ</th><th>สถานะ</th>
+        </tr></thead><tbody>
+          ${criticalList.map(x=>{
+            const eq = sheetsEq(x.stock, x.s);
+            return `<tr>
+            <td class="left">${esc(stickerLabel(x.s))}</td>
+            <td class="num">${num(x.stock)} ${esc(x.s.unit||'ดวง')}${eq!=null?`<div class="subtle" style="font-size:11.5px;">= ${num(eq,1)} แผ่น</div>`:''}</td>
+            <td class="num">${num(x.s.reorderPoint||0)}</td>
+            <td>${badgeForStatus(x.status)}</td>
+          </tr>`;}).join('')}
+        </tbody></table></div>`}
+      </div>
+
+      <div class="card card-pad">
+        <div class="section-title">ใช้สูงสุด 3 อันดับ <span class="subtle" style="font-weight:500;">(30 วันล่าสุด)</span></div>
+        <div class="section-desc">สติ๊กเกอร์ที่เบิกใช้มากที่สุดในช่วงนี้</div>
+        ${top3.length===0 ? `<div class="empty-state">${icon('history',30)}<div>ยังไม่มีการเบิกใช้ในช่วงนี้</div></div>` : top3.map(([id,q])=>{
+          const s = stickerById(id);
+          const pct = maxTop3 ? Math.max(6,(q/maxTop3*100)) : 0;
+          return `<div class="usage-bar-row">
+            <div class="name">${esc(s?stickerLabel(s):'(ไม่พบ)')}</div>
+            <div class="usage-bar-track"><div class="usage-bar-fill" style="width:${pct}%"></div></div>
+            <div class="usage-bar-val">${num(q)} ดวง</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:16px;">
+      <div class="card card-pad">
+        <div class="section-title">ยอดใช้เติบโต <span class="subtle" style="font-weight:500;">(30 วันล่าสุด เทียบ 30 วันก่อนหน้า)</span></div>
+        <div class="section-desc">สติ๊กเกอร์ที่เบิกใช้เพิ่มขึ้นชัดเจน อาจต้องเผื่อสต็อกเพิ่ม</div>
+        ${growing.length===0 ? `<div class="empty-state">${icon('history',30)}<div>ยังไม่มีรายการที่ใช้เพิ่มขึ้นชัดเจน</div></div>` : `
+        <div class="table-wrap"><table><thead><tr><th class="left">สติ๊กเกอร์</th><th>30 วันนี้</th><th>30 วันก่อน</th><th>เพิ่มขึ้น</th></tr></thead><tbody>
+          ${growing.map(x=>`<tr>
+            <td class="left">${esc(stickerLabel(x.s))}</td>
+            <td class="num">${num(x.cur)}</td>
+            <td class="num subtle">${num(x.prev)}</td>
+            <td class="num"><span class="badge badge-warning">+${num(x.delta)}</span></td>
+          </tr>`).join('')}
+        </tbody></table></div>`}
+      </div>
+
+      <div class="card card-pad">
+        <div class="section-title">ไม่เคลื่อนไหว / เคลื่อนไหวน้อย 5 อันดับ <span class="subtle" style="font-weight:500;">(90 วันล่าสุด)</span></div>
+        <div class="section-desc">สติ๊กเกอร์ที่แทบไม่ถูกเบิกใช้ ควรตรวจสอบว่ายังใช้อยู่หรือสต็อกค้าง</div>
+        ${stale.length===0 ? `<div class="empty-state">${icon('box',30)}<div>ยังไม่มีข้อมูล</div></div>` : `
+        <div class="table-wrap"><table><thead><tr><th class="left">สติ๊กเกอร์</th><th>เบิกใน 90 วัน</th><th class="left">เบิกครั้งล่าสุด</th></tr></thead><tbody>
+          ${stale.map(x=>`<tr>
+            <td class="left">${esc(stickerLabel(x.s))}</td>
+            <td class="num">${num(x.usage90)}</td>
+            <td class="left subtle">${x.lastOutAt?thaiDate(x.lastOutAt):'ไม่เคยเบิก'}</td>
+          </tr>`).join('')}
+        </tbody></table></div>`}
+      </div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px;">
+      <div class="section-title">กิจกรรมล่าสุด</div>
+      ${recent.length===0 ? `<div class="empty-state">${icon('history',30)}<div>ยังไม่มีความเคลื่อนไหว</div></div>` : `
+      <div class="table-wrap"><table><thead><tr>
+        <th class="left">วันเวลา</th><th class="left">ประเภท</th><th class="left">สติ๊กเกอร์</th><th>จำนวน</th><th class="left">เอกสาร</th><th class="left">โดย</th>
+      </tr></thead><tbody>
+        ${recent.map(rowMovement).join('')}
+      </tbody></table></div>`}
+    </div>
+  `;
+  const criticalBtn = document.getElementById('dashCriticalPoBtn');
+  if(criticalBtn) criticalBtn.addEventListener('click', ()=>{ goTo('po', {openCreateFor: criticalList.map(x=>x.s.id)}); });
+}
+function rowMovement(m){
+  const s = stickerById(m.stickerId);
+  const typeBadge = m.type==='IN' ? `<span class="badge badge-ok">รับเข้า</span>` : m.type==='OUT' ? `<span class="badge badge-critical">เบิกออก</span>` : `<span class="badge badge-info">ปรับปรุง</span>`;
+  const sign = m.type==='OUT' ? '-' : '+';
+  const unitNote = m.enteredUnit==='SHEET' ? ` (${num(m.enteredQty)} แผ่น)` : '';
+  return `<tr>
+    <td class="left">${thaiDateTime(m.at)}</td>
+    <td class="left">${typeBadge}</td>
+    <td class="left">${esc(s?stickerLabel(s):'(ไม่พบ)')}</td>
+    <td class="num">${sign}${num(m.qty)}<span class="subtle">${unitNote}</span></td>
+    <td class="left mono" style="font-size:12px;">${esc(m.docNo||'-')}</td>
+    <td class="left">${esc(m.by||'-')}</td>
+  </tr>`;
+}
+
+/* =========================================================
+   VIEW: STOCK (sticker master)
+========================================================= */
+let stockSearch = '';
+let stockSortDir = 'asc';
+function renderStock(){
+  const el = document.getElementById('view-stock');
+  const stockMap = computeStockMap();
+  const usage10 = computeUsage(10);
+  const recentStats = computeRecentOutStats();
+  let list = activeStickers();
+  if(stockSearch.trim()){
+    const q = stockSearch.trim().toLowerCase();
+    list = list.filter(s=> (s.name||'').toLowerCase().includes(q) || (s.code||'').toLowerCase().includes(q));
+  }
+  list = list.slice().sort((a,b)=> stockSortDir==='asc' ? (a.code||'').localeCompare(b.code||'') : (b.code||'').localeCompare(a.code||''));
+  el.innerHTML = `
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <input class="input search" id="stockSearchInput" placeholder="ค้นหาชื่อ/รหัสสติ๊กเกอร์…" value="${esc(stockSearch)}">
+        <button class="btn btn-ghost btn-sm" id="exportStockBtn">${icon('download',14)}ส่งออก CSV</button>
+      </div>
+      <button class="btn btn-primary" id="addStickerBtn">${icon('plus',15)}เพิ่มรายการสินค้าใหม่</button>
+    </div>
+    <div class="card">
+      ${list.length===0 ? `<div class="empty-state">${icon('stock',30)}<div>ยังไม่มีชนิดสติ๊กเกอร์ — ลองนำเข้าแคตตาล็อกที่หน้า "ตั้งค่า/ข้อมูลอ้างอิง" หรือเพิ่มเอง</div></div>` : `
+      <div class="table-wrap"><table><thead><tr>
+        <th class="left"><button type="button" class="sort-th-btn" id="stockSortBtn" title="เรียงตามรหัส A-Z / Z-A">รหัส <span class="sort-arrow">${stockSortDir==='asc'?'▲':'▼'}</span></button></th><th></th><th class="left" style="padding-left:46px;">ชื่อสติ๊กเกอร์</th><th>สถานะ</th><th>คงเหลือ (ดวง)</th><th>เบิกใช้ (10 วันล่าสุด)</th>
+        <th>ต้นทุนเฉลี่ย/ดวง</th>
+      </tr></thead><tbody>
+        ${list.map(s=>{
+          const st = stockMap[s.id]||{stock:0,avgCost:0};
+          const status = stockStatus(st.stock, s.id, recentStats);
+          const eq = sheetsEq(st.stock, s);
+          return `<tr>
+            <td class="left mono" style="font-size:12px;">${esc(s.code||'-')}</td>
+            <td style="white-space:nowrap;">
+              <button class="btn btn-ghost btn-sm btn-icon" data-adjust="${s.id}" title="ปรับปรุงสต็อก">${icon('adjustpm',15)}</button>
+              <button class="btn btn-ghost btn-sm btn-icon" data-edit-sticker="${s.id}" title="แก้ไข">${icon('edit',15)}</button>
+            </td>
+            <td class="left" style="font-weight:600;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <button type="button" class="thumb-btn" data-edit-thumb="${s.id}" title="คลิกเพื่ออัปโหลด/วางรูปสติ๊กเกอร์นี้">${stickerThumbHtml(s,36)}</button>
+                <div>${esc(s.name)}${s.sizeCm?` <span class="subtle" style="font-weight:400;">(${esc(s.sizeCm)}cm)</span>`:''}${pps(s)?` <span class="subtle" style="font-weight:400;">(${num(pps(s))}Pcs.)</span>`:''}</div>
+              </div>
+            </td>
+            <td>${badgeForStatus(status)}</td>
+            <td class="num">${num(st.stock)} ดวง${eq!=null?`<div class="subtle" style="font-size:11.5px;">= ${num(eq,1)} แผ่น</div>`:''}</td>
+            <td class="num">${num(usage10[s.id]||0)} ดวง</td>
+            <td class="num">${thb(st.avgCost)}<div class="subtle" style="font-size:11.5px;">รวม ${thb(st.stock*st.avgCost)}</div></td>
+          </tr>`;
+        }).join('')}
+      </tbody></table></div>`}
+    </div>
+  `;
+  document.getElementById('stockSearchInput').addEventListener('input', e=>{ stockSearch = e.target.value; renderStock(); });
+  document.getElementById('addStickerBtn').addEventListener('click', ()=> openStickerModal());
+  document.getElementById('exportStockBtn').addEventListener('click', exportStockCsv);
+  const stockSortBtn = document.getElementById('stockSortBtn');
+  if(stockSortBtn) stockSortBtn.addEventListener('click', ()=>{ stockSortDir = stockSortDir==='asc'?'desc':'asc'; renderStock(); });
+  el.querySelectorAll('[data-edit-sticker]').forEach(b=> b.addEventListener('click', ()=> openStickerModal(stickerById(b.dataset.editSticker))));
+  el.querySelectorAll('[data-edit-thumb]').forEach(b=> b.addEventListener('click', ()=> openStickerModal(stickerById(b.dataset.editThumb), {focusImage:true})));
+  el.querySelectorAll('[data-adjust]').forEach(b=> b.addEventListener('click', ()=>{ if(!requireActiveUser()) return; openAdjustModal(stickerById(b.dataset.adjust)); }));
+}
+
+function openStickerModal(existing, opts){
+  const isEdit = !!existing;
+  const settings = getSettings();
+  let stickerModalImage = existing?.imageUrl || '';
+  openModal(`
+    <div class="modal-head"><h3>${isEdit?'แก้ไขรายการสติ๊กเกอร์':'รายการสินค้าใหม่ (สติ๊กเกอร์แบบใหม่)'}</h3>
+      <button class="btn btn-ghost btn-icon" data-close-modal>${icon('close',16)}</button></div>
+    <div class="modal-body">
+      ${!isEdit?`<div class="section-desc" style="margin-top:-4px;">สติ๊กเกอร์แบบใหม่ที่ไม่อยู่ในแคตตาล็อกเดิม ต้องระบุ <b>ขนาด</b> และ <b>จำนวนดวงต่อแผ่น</b> เพื่อให้ระบบคำนวณการรับ/เบิกเป็นแผ่นได้ถูกต้อง (รหัสอ้างอิงตามตารางสติ๊กเกอร์ที่ให้ไว้ เช่น B04, K01 — ดูทั้งหมดได้ที่หน้าตั้งค่า/ข้อมูลอ้างอิง)</div>`:''}
+      <div class="field">
+        <label>รูปตัวอย่างสติ๊กเกอร์ (ถ้ามี)</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="f_image_preview" tabindex="0" title="วางรูปที่ Capture หน้าจอ (Ctrl+V) หรือลากไฟล์รูปมาวางตรงนี้ได้" style="width:64px;height:64px;border-radius:8px;border:1px dashed var(--border);background:var(--surface-2);display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;cursor:pointer;outline:none;">
+            ${stickerModalImage? `<img src="${esc(stickerModalImage)}" style="width:100%;height:100%;object-fit:cover;">` : icon('stock',24)}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+            <input type="file" accept="image/*" id="f_image_file" class="input" style="padding:6px;">
+            <div class="subtle" style="font-size:11.5px;">คลิกที่กรอบรูปแล้วกด Ctrl+V เพื่อวางรูปที่ Capture หน้าจอ หรือลากไฟล์มาวางก็ได้</div>
+            <button type="button" class="btn btn-ghost btn-sm" id="f_image_remove" style="align-self:flex-start;${stickerModalImage?'':'display:none;'}">${icon('trash',13)}ลบรูป</button>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>ชื่อลายสติ๊กเกอร์ *</label><input class="input" id="f_name" value="${esc(existing?.name||'')}" placeholder="เช่น Brazil Cerrado"></div>
+      <div class="field-row3">
+        <div class="field"><label>รหัส (ตามตารางอ้างอิง)</label><input class="input" id="f_code" value="${esc(existing?.code||'')}" placeholder="เช่น B04"></div>
+        <div class="field"><label>ขนาด (กว้าง×สูง ซม.) *</label><input class="input" id="f_size" value="${esc(existing?.sizeCm||'')}" placeholder="เช่น 12x9.5"></div>
+        <div class="field"><label>จำนวนดวงต่อแผ่น *</label><input class="input" id="f_pps" type="number" min="0" value="${existing?.piecesPerSheet??''}" placeholder="เช่น 9"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>จุดสั่งซื้อขั้นต่ำ (จุดวิกฤต, หน่วยดวง)</label><input class="input" id="f_reorder" type="number" min="0" value="${existing?.reorderPoint??0}"></div>
+        <div class="field"><label>ราคา/แผ่น (บาท, ไม่รวม VAT)</label><input class="input" id="f_price" type="number" min="0" step="0.01" value="${existing?.pricePerSheet??settings.pricePerSheet}"></div>
+      </div>
+      <div class="field"><label>ผู้จำหน่ายหลัก</label><input class="input" id="f_supplier" value="${esc(existing?.supplier||settings.printerName||'')}"></div>
+      <div class="field"><label>หมายเหตุ</label><textarea class="input" id="f_note" rows="2">${esc(existing?.note||'')}</textarea></div>
+    </div>
+    <div class="modal-foot">
+      ${isEdit?`<button class="btn btn-danger" id="deactivateBtn" style="margin-inline-end:auto;">ปิดการใช้งานรายการนี้</button>`:''}
+      <button class="btn btn-ghost" data-close-modal>ยกเลิก</button>
+      <button class="btn btn-primary" id="saveStickerBtn">บันทึก</button>
+    </div>
+  `);
+  async function applyStickerModalImage(blobOrFile){
+    try{
+      const dataUrl = await readImageAsSquareDataUrl(blobOrFile, 240);
+      stickerModalImage = dataUrl;
+      document.getElementById('f_image_preview').innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+      document.getElementById('f_image_remove').style.display = '';
+    }catch(err){ console.error(err); toast('ไม่สามารถอ่านรูปภาพนี้ได้'); }
+  }
+  document.getElementById('f_image_file').addEventListener('change', (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(file) applyStickerModalImage(file);
+  });
+  document.getElementById('f_image_remove').addEventListener('click', ()=>{
+    stickerModalImage = '';
+    document.getElementById('f_image_preview').innerHTML = icon('stock',24);
+    document.getElementById('f_image_remove').style.display = 'none';
+  });
+  // รองรับการวางรูปที่ Capture หน้าจอ (คัดลอกมาแล้วกด Ctrl+V) และการลากไฟล์มาวาง
+  const dropzone = document.getElementById('f_image_preview');
+  if(opts && opts.focusImage){ setTimeout(()=> dropzone.focus(), 60); }
+  function onPaste(e){
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    for(const item of items){
+      if(item.type && item.type.startsWith('image/')){
+        const blob = item.getAsFile();
+        if(blob){ applyStickerModalImage(blob); toast('วางรูปเรียบร้อย'); }
+        e.preventDefault();
+        break;
+      }
+    }
+  }
+  document.addEventListener('paste', onPaste);
+  dropzone.addEventListener('dragover', e=>{ e.preventDefault(); dropzone.style.borderColor = 'var(--accent)'; });
+  dropzone.addEventListener('dragleave', ()=>{ dropzone.style.borderColor = ''; });
+  dropzone.addEventListener('drop', e=>{
+    e.preventDefault();
+    dropzone.style.borderColor = '';
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if(file && file.type.startsWith('image/')) applyStickerModalImage(file);
+  });
+  function detachStickerModalPaste(){ document.removeEventListener('paste', onPaste); }
+  document.getElementById('modalBox').querySelectorAll('[data-close-modal]').forEach(b=> b.addEventListener('click', detachStickerModalPaste));
+  document.getElementById('modalBackdrop').addEventListener('click', function h(e){ if(e.target.id==='modalBackdrop'){ detachStickerModalPaste(); this.removeEventListener('click',h); } });
+  document.getElementById('saveStickerBtn').addEventListener('click', async ()=>{
+    const name = document.getElementById('f_name').value.trim();
+    const sizeCm = document.getElementById('f_size').value.trim();
+    const piecesPerSheet = Number(document.getElementById('f_pps').value)||0;
+    if(!name){ toast('กรุณากรอกชื่อสติ๊กเกอร์'); return; }
+    if(!isEdit && !sizeCm){ toast('กรุณาระบุขนาดของสติ๊กเกอร์แบบใหม่'); return; }
+    if(!isEdit && piecesPerSheet<=0){ toast('กรุณาระบุจำนวนดวงต่อแผ่นของสติ๊กเกอร์แบบใหม่'); return; }
+    const data = {
+      name,
+      code: document.getElementById('f_code').value.trim(),
+      sizeCm,
+      piecesPerSheet,
+      unit: 'ดวง',
+      imageUrl: stickerModalImage,
+      reorderPoint: Number(document.getElementById('f_reorder').value)||0,
+      pricePerSheet: Number(document.getElementById('f_price').value)||0,
+      supplier: document.getElementById('f_supplier').value.trim(),
+      note: document.getElementById('f_note').value.trim(),
+      active: true,
+    };
+    if(isEdit){ await updateDoc('stickers', existing.id, data); toast('บันทึกการแก้ไขแล้ว'); }
+    else { data.createdAt = nowIso(); await addDoc('stickers', data); toast('เพิ่มรายการสินค้าใหม่แล้ว'); }
+    detachStickerModalPaste();
+    closeModal();
+  });
+  if(isEdit){
+    document.getElementById('deactivateBtn').addEventListener('click', async ()=>{
+      await updateDoc('stickers', existing.id, {active:false});
+      toast('ปิดการใช้งานรายการแล้ว');
+      detachStickerModalPaste();
+      closeModal();
+    });
+  }
+}
+
+function openAdjustModal(sticker){
+  const stockMap = computeStockMap();
+  const cur = stockMap[sticker.id]?.stock||0;
+  openModal(`
+    <div class="modal-head"><h3>ปรับปรุงสต็อก: ${esc(sticker.name)}</h3>
+      <button class="btn btn-ghost btn-icon" data-close-modal>${icon('close',16)}</button></div>
+    <div class="modal-body">
+      <div class="kv-row" style="margin-bottom:12px;"><span class="k">สต็อกปัจจุบัน</span><span class="v">${num(cur)} ดวง</span></div>
+      <div class="field"><label>จำนวนที่ต้องการปรับ (หน่วยดวง — ใส่ค่าลบเพื่อปรับลด เช่น -5)</label><input class="input" id="adj_qty" type="number" placeholder="เช่น 10 หรือ -5"></div>
+      <div class="field"><label>วันที่ปรับปรุง</label><input class="input" type="date" id="adj_date" value="${todayIso()}"></div>
+      <div class="field"><label>เหตุผลการปรับปรุง *</label><input class="input" id="adj_reason" placeholder="เช่น นับสต็อกจริงพบคลาดเคลื่อน"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>ยกเลิก</button>
+      <button class="btn btn-primary" id="saveAdjustBtn">บันทึกการปรับปรุง</button>
+    </div>
+  `);
+  document.getElementById('saveAdjustBtn').addEventListener('click', async ()=>{
+    if(!requireActiveUser()) return;
+    const qty = Number(document.getElementById('adj_qty').value);
+    const reason = document.getElementById('adj_reason').value.trim();
+    const dateStr = document.getElementById('adj_date').value || todayIso();
+    if(!qty){ toast('กรุณาระบุจำนวนที่ปรับปรุง'); return; }
+    if(!reason){ toast('กรุณาระบุเหตุผล'); return; }
+    const now = new Date();
+    const at = new Date(`${dateStr}T${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`).toISOString();
+    await addDoc('movements', {
+      stickerId: sticker.id, stickerCode: sticker.code, stickerName: sticker.name, type:'ADJUST', qty,
+      docType:'ADJUST', docNo:nextDocNo('AJ','movements'), note:reason, by:getUserName(), at,
+    });
+    toast('บันทึกการปรับปรุงสต็อกแล้ว');
+    closeModal();
+  });
+}
+
+function exportStockCsv(){
+  const stockMap = computeStockMap();
+  const rows = [['รหัส','ชื่อสติ๊กเกอร์','ขนาด','ดวง/แผ่น','คงเหลือ(ดวง)','จุดสั่งซื้อ','ราคา/แผ่น','ต้นทุนเฉลี่ยต่อดวง','มูลค่าคงเหลือ','ผู้จำหน่าย']];
+  activeStickers().forEach(s=>{
+    const st = stockMap[s.id]||{stock:0,avgCost:0};
+    rows.push([s.code||'', s.name, s.sizeCm||'', s.piecesPerSheet||'', st.stock, s.reorderPoint||0, s.pricePerSheet||'', st.avgCost.toFixed(2), (st.stock*st.avgCost).toFixed(2), s.supplier||'']);
+  });
+  downloadCsv(rows, `stock-${todayIso()}.csv`);
+}
+async function downloadCsv(rows, filename){
+  const csv = '﻿'+rows.map(r=> r.map(c=>{
+    const s = String(c??'');
+    return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }).join(',')).join('\r\n');
+  if(downloadsApi){
+    try{ await downloadsApi.save({filename, data: csv}); toast('บันทึกไฟล์แล้ว'); return; }
+    catch(e){ console.error(e); }
+  }
+  toast('ไม่สามารถส่งออกไฟล์ได้ในขณะนี้');
+}
+
+/* =========================================================
+   VIEW: RECEIVE (รับสติ๊กเกอร์ / ใบรับ) — เฉพาะจำนวน ไม่ต้องระบุราคา
+   รับได้ทั้งยกแผ่นและกรอกดวง รองรับได้ถึง ~20 รายการต่อครั้ง
+   (ต้นทุนต่อดวงคำนวณเบื้องหลังจากราคา/แผ่นของสติ๊กเกอร์ หรือราคาจาก PO ที่อ้างอิง — ไม่แสดงในฟอร์มนี้)
+========================================================= */
+let receiveLines = [];
+let receivePoRef = null; // {docNo, priceById:{stickerId:pricePerSheet}} when receiving against a PO
+function freshReceiveLine(stickerId, unit){ return {key:uid(), stickerId:stickerId||'', unit:unit||'SHEET', qty:'', extraPieces:''}; }
+function receiveLinePieces(line){
+  const s = stickerById(line.stickerId);
+  const qty = Number(line.qty)||0;
+  if(line.unit!=='SHEET') return qty;
+  const extra = Number(line.extraPieces)||0;
+  return qty*pps(s) + extra;
+}
+function renderReceive(opts){
+  const el = document.getElementById('view-receive');
+  const prefill = (opts && opts.prefillPO) || poPrefill;
+  if(prefill){
+    receiveLines = prefill.items.map(it=>({key:uid(), stickerId:it.stickerId, unit:'SHEET', qty:it.qty}));
+    receivePoRef = {id: prefill.id, docNo: prefill.docNo, priceById: Object.fromEntries((prefill.items||[]).map(it=>[it.stickerId, Number(it.unitCost)||0]))};
+    poPrefill = null;
+  } else if(receiveLines.length===0){
+    receiveLines = [freshReceiveLine()];
+  }
+  const supplierVal = prefill ? prefill.supplier : getSettings().printerName;
+  const docNo = nextDocNo('RC','receipts');
+  el.innerHTML = `
+    <div class="card card-pad">
+      ${prefill? `<div class="banner info">${icon('receive',18)}<div>กำลังบันทึกรับเข้าจากใบสั่งซื้อ <b>${esc(prefill.docNo)}</b> — ตรวจสอบจำนวนก่อนบันทึก</div></div>`:''}
+      <div class="field-row3">
+        <div class="field"><label>เลขที่ใบรับ</label><input class="input mono" value="${docNo}" disabled></div>
+        <div class="field"><label>วันที่รับ</label><input class="input" type="date" id="r_date" value="${todayIso()}"></div>
+        <div class="field"><label>ผู้จำหน่าย</label><input class="input" id="r_supplier" value="${esc(supplierVal)}" placeholder="ชื่อร้าน/ผู้จำหน่าย"></div>
+      </div>
+      <div class="section-title" style="margin-top:6px;">รายการสติ๊กเกอร์ที่รับเข้า <span class="subtle" style="font-weight:500;">(รับได้หลายรายการต่อครั้ง — ไม่ต้องระบุราคา ใบรับจะมีแค่จำนวนที่เข้ามา)</span></div>
+      <div class="line-items" id="r_lines"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost btn-sm" id="r_addline">${icon('plus',14)}เพิ่มรายการ</button>
+        <button class="btn btn-ghost btn-sm" id="r_addline5">${icon('plus',14)}เพิ่มทีละ 5 รายการ</button>
+      </div>
+      <div class="field" style="margin-top:14px;"><label>ผู้รับของ</label><input class="input" id="r_receiver" value="${esc(getUserName())}"></div>
+      <div class="field"><label>หมายเหตุ</label><textarea class="input" id="r_note" rows="2"></textarea></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+        <button class="btn btn-ghost" id="r_reset">ล้างฟอร์ม</button>
+        <button class="btn btn-primary" id="r_submit">${icon('receive',16)}บันทึกใบรับ</button>
+      </div>
+    </div>
+  `;
+  renderReceiveLines();
+  document.getElementById('r_addline').addEventListener('click', ()=>{ receiveLines.push(freshReceiveLine()); renderReceiveLines(); });
+  document.getElementById('r_addline5').addEventListener('click', ()=>{ for(let i=0;i<5;i++) receiveLines.push(freshReceiveLine()); renderReceiveLines(); });
+  document.getElementById('r_reset').addEventListener('click', ()=>{ receiveLines=[freshReceiveLine()]; receivePoRef=null; renderReceive(); });
+  document.getElementById('r_submit').addEventListener('click', submitReceive);
+}
+function renderReceiveLines(){
+  const wrap = document.getElementById('r_lines');
+  const opts = stickerOptionsHtml();
+  wrap.innerHTML = `
+    <div class="line-item-row head receive-cols"><div>สติ๊กเกอร์</div><div>หน่วย</div><div>จำนวน</div><div>ดวงเกิน/ขาด (ถ้ามี)</div><div></div></div>
+    ${receiveLines.map((line,idx)=>{
+      const s = stickerById(line.stickerId);
+      const hasPps = pps(s) > 0;
+      const unit = hasPps ? line.unit : 'PIECE';
+      const pieces = receiveLinePieces({...line, unit});
+      const sheetPieces = (Number(line.qty)||0)*pps(s);
+      return `
+      <div class="line-item-row receive-cols" style="align-items:center;" data-line="${line.key}">
+        <div>
+          <label class="li-label">สติ๊กเกอร์</label>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="flex:none;">${stickerThumbHtml(s,34)}</div>
+            <select class="select" data-f="stickerId" style="min-width:0;flex:1;"><option value="">${idx+1}. — เลือกสติ๊กเกอร์ —</option>${opts}</select>
+          </div>
+        </div>
+        <div>
+          <label class="li-label">หน่วย</label>
+          <div class="unit-toggle" ${hasPps?'':'style="opacity:.4;pointer-events:none;"'}>
+            <button type="button" class="seg ${unit==='SHEET'?'active':''}" data-unit="SHEET">ยกแผ่น</button>
+            <button type="button" class="seg ${unit==='PIECE'?'active':''}" data-unit="PIECE">กรอกดวง</button>
+          </div>
+        </div>
+        <div>
+          <label class="li-label">จำนวน</label>
+          <input class="input" type="number" min="0" data-f="qty" value="${line.qty}" placeholder="0">
+          ${line.stickerId && !hasPps ? `<div class="stock-hint warn">ยังไม่ตั้งค่าดวง/แผ่น</div>`:''}
+        </div>
+        <div ${unit==='SHEET'?'':'style="opacity:.4;pointer-events:none;"'}>
+          <label class="li-label">ดวงเกิน/ขาด (ถ้ามี)</label>
+          <input class="input" type="number" data-f="extraPieces" value="${line.extraPieces}" placeholder="เช่น +5 หรือ -3" title="กรอกจำนวนดวงที่มาเกินหรือขาดจากที่ควรได้ตามจำนวนแผ่น เช่น มาเกิน 5 ดวง ใส่ +5 มาขาด 3 ดวง ใส่ -3">
+          ${unit==='SHEET'?`<div class="stock-hint">${num(sheetPieces)}${line.extraPieces?(Number(line.extraPieces)>=0?' + ':' - ')+num(Math.abs(Number(line.extraPieces)||0)):''} = <b>${num(pieces)}</b> ดวง</div>`:''}
+        </div>
+        <div class="li-remove"><button class="btn btn-ghost btn-icon btn-sm" data-remove-line title="ลบรายการ">${icon('trash',15)}</button></div>
+      </div>`;
+    }).join('')}
+    <div class="line-item-foot"><span class="subtle">รวม ${receiveLines.length} รายการ</span><span class="subtle">รวม ${num(receiveLines.reduce((s,l)=>{const st=stickerById(l.stickerId);return s+receiveLinePieces({...l, unit: pps(st)>0?l.unit:'PIECE'});},0))} ดวง</span></div>
+  `;
+  receiveLines.forEach(line=>{
+    const row = wrap.querySelector(`[data-line="${line.key}"]`);
+    row.querySelector('[data-f="stickerId"]').value = line.stickerId;
+    row.querySelectorAll('[data-unit]').forEach(btn=> btn.addEventListener('click', ()=>{ line.unit = btn.dataset.unit; renderReceiveLines(); }));
+    row.querySelectorAll('[data-f]').forEach(inp=> inp.addEventListener('input', ()=>{ line[inp.dataset.f]=inp.value; renderReceiveLines(); }));
+    const removeBtn = row.querySelector('[data-remove-line]');
+    if(removeBtn) removeBtn.addEventListener('click', ()=>{
+      receiveLines = receiveLines.filter(l=>l.key!==line.key);
+      if(receiveLines.length===0) receiveLines=[freshReceiveLine()];
+      renderReceiveLines();
+    });
+  });
+}
+function estimateReceiveUnitCost(sticker, pieces){
+  // Internal-only costing (never shown on the receive form or printed receipt):
+  // prefer the price agreed on the referenced PO, else the sticker's master price/sheet,
+  // else fall back to the sticker's current average cost so valuation never drops to zero.
+  if(!sticker) return 0;
+  const poPrice = receivePoRef && receivePoRef.priceById[sticker.id];
+  const pricePerSheet = poPrice || Number(sticker.pricePerSheet) || 0;
+  const p = pps(sticker);
+  if(pricePerSheet>0 && p>0) return pricePerSheet/p;
+  const stockMap = computeStockMap();
+  return stockMap[sticker.id]?.avgCost || 0;
+}
+async function submitReceive(){
+  if(!requireActiveUser()) return;
+  const validLines = receiveLines.filter(l=> l.stickerId && Number(l.qty)>0);
+  if(validLines.length===0){ toast('กรุณาเพิ่มรายการสติ๊กเกอร์อย่างน้อย 1 รายการ'); return; }
+  const supplier = document.getElementById('r_supplier').value.trim();
+  const date = document.getElementById('r_date').value || todayIso();
+  const receiver = document.getElementById('r_receiver').value.trim() || getUserName();
+  const note = document.getElementById('r_note').value.trim();
+  const docNo = nextDocNo('RC','receipts');
+  const items = validLines.map(l=>{
+    const s = stickerById(l.stickerId);
+    const unit = pps(s)>0 ? l.unit : 'PIECE';
+    const pieces = receiveLinePieces({...l, unit});
+    return {stickerId:l.stickerId, code:s?s.code:'', name:s?s.name:'', unit, enteredQty:Number(l.qty), qty:pieces};
+  });
+  await addDoc('receipts', {docNo, date, supplier, items, receivedBy:receiver, note, poRef:receivePoRef?.docNo||'', createdAt:nowIso()});
+  for(const it of items){
+    const s = stickerById(it.stickerId);
+    await addDoc('movements', {
+      stickerId:it.stickerId, stickerCode:it.code, stickerName:it.name, type:'IN', qty:it.qty,
+      unitCost: estimateReceiveUnitCost(s, it.qty),
+      enteredUnit:it.unit, enteredQty:it.enteredQty,
+      docType:'RECEIPT', docNo, note, by:receiver, at:nowIso(),
+    });
+  }
+  if(receivePoRef?.id){
+    await updateDoc('purchaseOrders', receivePoRef.id, {status:'received'});
+  }
+  toast(`บันทึกใบรับ ${docNo} เรียบร้อย (${items.length} รายการ)`);
+  receiveLines = [freshReceiveLine()];
+  receivePoRef = null;
+  goTo('docs');
+  promptAfterSave('receipt', {docNo, date, supplier, items, receivedBy:receiver, note}, 'ตัวอย่างใบรับสินค้า');
+}
+
+/* =========================================================
+   VIEW: ISSUE (เบิกสติ๊กเกอร์ / คืนสติ๊กเกอร์) — เบิกได้ทั้งดวงและแผ่น
+========================================================= */
+let issueTab = 'issue';
+let issueLines = [];
+let issueKind = 'normal';
+let returnLines = [];
+function freshIssueLine(){ return {key:uid(), stickerId:'', unit:'PIECE', qty:''}; }
+function freshReturnLine(){ return {key:uid(), stickerId:'', unit:'PIECE', qty:''}; }
+function issueLinePieces(line){
+  const s = stickerById(line.stickerId);
+  const qty = Number(line.qty)||0;
+  return line.unit==='SHEET' ? qty*pps(s) : qty;
+}
+function renderIssue(){
+  const el = document.getElementById('view-issue');
+  el.innerHTML = `
+    <div class="tabs">
+      <button class="tab ${issueTab==='issue'?'active':''}" data-issuetab="issue">${icon('issue',14)} เบิกสติ๊กเกอร์</button>
+      <button class="tab ${issueTab==='return'?'active':''}" data-issuetab="return">${icon('receive',14)} คืนสติ๊กเกอร์</button>
+    </div>
+    <div id="issueTabBody"></div>
+  `;
+  el.querySelectorAll('[data-issuetab]').forEach(b=> b.addEventListener('click', ()=>{ issueTab=b.dataset.issuetab; renderIssue(); }));
+  if(issueTab==='issue') renderIssueForm(); else renderReturnForm();
+}
+function renderIssueForm(){
+  const body = document.getElementById('issueTabBody');
+  if(issueLines.length===0) issueLines=[freshIssueLine()];
+  const docNo = nextDocNo('RQ','requisitions');
+  body.innerHTML = `
+    <div class="card card-pad">
+      <div class="field-row3">
+        <div class="field"><label>เลขที่ใบเบิก</label><input class="input mono" value="${docNo}" disabled></div>
+        <div class="field"><label>วันที่เบิก</label><input class="input" type="date" id="i_date" value="${todayIso()}"></div>
+        <div class="field"><label>ประเภทการเบิก</label>
+          <select class="select" id="i_kind">
+            <option value="normal" ${issueKind==='normal'?'selected':''}>เบิกปกติ</option>
+            <option value="extra" ${issueKind==='extra'?'selected':''}>เบิกเพิ่มพิเศษ (เนื่องจากเบิกขาด)</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" id="i_refdoc_wrap" style="max-width:280px;${issueKind==='extra'?'':'display:none;'}"><label>อ้างอิงใบเบิกเลขที่เดิม</label><input class="input" id="i_refdoc" placeholder="เช่น RQ-260901-001"></div>
+      <div class="section-title" style="margin-top:6px;">รายการสติ๊กเกอร์ที่เบิก</div>
+      <div class="section-desc">เลือกได้ว่าจะเบิกเป็น "ดวง" หรือ "แผ่น" ต่อรายการ</div>
+      <div class="line-items" id="i_lines"></div>
+      <button class="btn btn-ghost btn-sm" id="i_addline">${icon('plus',14)}เพิ่มรายการ</button>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
+        <button class="btn btn-ghost" id="i_reset">ล้างฟอร์ม</button>
+        <button class="btn btn-primary" id="i_submit">${icon('issue',16)}บันทึกใบเบิก</button>
+      </div>
+    </div>
+  `;
+  renderIssueLines();
+  document.getElementById('i_kind').addEventListener('change', e=>{
+    issueKind = e.target.value;
+    document.getElementById('i_refdoc_wrap').style.display = issueKind==='extra' ? '' : 'none';
+  });
+  document.getElementById('i_addline').addEventListener('click', ()=>{ issueLines.push(freshIssueLine()); renderIssueLines(); });
+  document.getElementById('i_reset').addEventListener('click', ()=>{ issueLines=[freshIssueLine()]; issueKind='normal'; renderIssueForm(); });
+  document.getElementById('i_submit').addEventListener('click', submitIssue);
+}
+function renderIssueLines(){
+  const wrap = document.getElementById('i_lines');
+  const stockMap = computeStockMap();
+  const opts = activeStickers().map(s=>{
+    const cur = stockMap[s.id]?.stock||0;
+    return `<option value="${s.id}">${esc(stickerLabel(s))} — คงเหลือ ${num(cur)} ดวง</option>`;
+  }).join('');
+  wrap.innerHTML = issueLines.map(line=>{
+    const s = stickerById(line.stickerId);
+    const hasPps = pps(s) > 0;
+    const unit = hasPps ? line.unit : 'PIECE';
+    const cur = line.stickerId ? (stockMap[line.stickerId]?.stock||0) : null;
+    const pieces = issueLinePieces({...line, unit});
+    const over = cur!==null && pieces>cur;
+    return `
+    <div class="line-card" data-line="${line.key}">
+      <div style="flex:none;align-self:center;">${stickerThumbHtml(s,34)}</div>
+      <select class="select" data-f="stickerId"><option value="">— เลือกสติ๊กเกอร์ —</option>${opts}</select>
+      <div class="unit-toggle" ${hasPps?'':'style="opacity:.4;pointer-events:none;"'}>
+        <button type="button" class="seg ${unit==='PIECE'?'active':''}" data-unit="PIECE">ดวง</button>
+        <button type="button" class="seg ${unit==='SHEET'?'active':''}" data-unit="SHEET">แผ่น</button>
+      </div>
+      <div class="mini-field"><label>${unit==='SHEET'?'จำนวนแผ่น':'จำนวนดวง'}</label><input class="input" type="number" min="0" data-f="qty" value="${line.qty}" placeholder="0"></div>
+      <div class="mini-readout">
+        ${unit==='SHEET' ? `= <b>${num(pieces)}</b> ดวง · ` : ''}${cur!==null?`คงเหลือ ${num(cur)} ดวง`:''}
+        ${over?`<div class="stock-hint warn">สต็อกไม่พอ!</div>`:''}
+        ${line.stickerId && !hasPps ? `<div class="stock-hint warn">ยังไม่ได้ตั้งค่าดวง/แผ่นของสติ๊กเกอร์นี้ — แก้ไขที่หน้าสต็อค</div>`:''}
+      </div>
+      <button class="btn btn-ghost btn-icon btn-sm" data-remove-line title="ลบรายการ">${icon('trash',15)}</button>
+    </div>`;
+  }).join('');
+  issueLines.forEach(line=>{
+    const row = wrap.querySelector(`[data-line="${line.key}"]`);
+    row.querySelector('[data-f="stickerId"]').value = line.stickerId;
+    row.querySelectorAll('[data-unit]').forEach(btn=> btn.addEventListener('click', ()=>{ line.unit = btn.dataset.unit; renderIssueLines(); }));
+    row.querySelectorAll('[data-f]').forEach(inp=> inp.addEventListener('input', ()=>{ line[inp.dataset.f]=inp.value; renderIssueLines(); }));
+    const removeBtn = row.querySelector('[data-remove-line]');
+    if(removeBtn) removeBtn.addEventListener('click', ()=>{
+      issueLines = issueLines.filter(l=>l.key!==line.key);
+      if(issueLines.length===0) issueLines=[freshIssueLine()];
+      renderIssueLines();
+    });
+  });
+}
+async function submitIssue(){
+  if(!requireActiveUser()) return;
+  const validLines = issueLines.filter(l=>l.stickerId && Number(l.qty)>0);
+  if(validLines.length===0){ toast('กรุณาเพิ่มรายการสติ๊กเกอร์อย่างน้อย 1 รายการ'); return; }
+  const stockMap = computeStockMap();
+  const withPieces = validLines.map(l=>{
+    const s = stickerById(l.stickerId);
+    const unit = pps(s)>0 ? l.unit : 'PIECE';
+    return {...l, unit, pieces: issueLinePieces({...l, unit})};
+  });
+  const overs = withPieces.filter(l=> l.pieces > (stockMap[l.stickerId]?.stock||0));
+  if(overs.length>0){
+    const ok = await confirmDialog('สต็อกไม่เพียงพอ', 'มีบางรายการที่จำนวนเบิกมากกว่าสต็อกคงเหลือ ต้องการบันทึกต่อหรือไม่? (สต็อกจะติดลบ)');
+    if(!ok) return;
+  }
+  const date = document.getElementById('i_date').value || todayIso();
+  const issuer = getUserName();
+  const kind = issueKind;
+  const refDocNo = kind==='extra' ? (document.getElementById('i_refdoc').value.trim()) : '';
+  const docNo = nextDocNo('RQ','requisitions');
+  const items = withPieces.map(l=>{
+    const s = stickerById(l.stickerId);
+    return {stickerId:l.stickerId, code:s?s.code:'', name:s?s.name:'', unit:l.unit, enteredQty:Number(l.qty), qty:l.pieces};
+  });
+  await addDoc('requisitions', {docNo, date, items, issuedBy:issuer, kind, refDocNo, createdAt:nowIso()});
+  for(const it of items){
+    await addDoc('movements', {
+      stickerId:it.stickerId, stickerCode:it.code, stickerName:it.name, type:'OUT', qty:it.qty,
+      enteredUnit:it.unit, enteredQty:it.enteredQty,
+      docType:'REQUISITION', docNo, note:'', by:issuer, at:nowIso(),
+    });
+  }
+  toast(`บันทึกใบเบิก ${docNo} เรียบร้อย`);
+  issueLines=[freshIssueLine()]; issueKind='normal';
+  goTo('docs', {tab:'requisitions'});
+  promptAfterSave('requisition', {docNo, date, items, issuedBy:issuer, kind, refDocNo}, 'ตัวอย่างใบเบิก');
+}
+
+/* =========================================================
+   VIEW: RETURN (คืนสติ๊กเกอร์ / ใบคืน) — เบิกเกิน หรือเบิกผิดรายการ
+========================================================= */
+function renderReturnForm(){
+  const body = document.getElementById('issueTabBody');
+  if(returnLines.length===0) returnLines=[freshReturnLine()];
+  const docNo = nextDocNo('RT','returns');
+  body.innerHTML = `
+    <div class="card card-pad">
+      <div class="section-desc">ใช้สำหรับคืนสติ๊กเกอร์ที่เบิกเกินความจำเป็น หรือเบิกผิดรายการ กลับเข้าสต็อค (ไม่กระทบต้นทุนเฉลี่ยของสติ๊กเกอร์)</div>
+      <div class="field-row3">
+        <div class="field"><label>เลขที่ใบคืน</label><input class="input mono" value="${docNo}" disabled></div>
+        <div class="field"><label>วันที่คืน</label><input class="input" type="date" id="rt_date" value="${todayIso()}"></div>
+        <div class="field"><label>เหตุผลที่คืน</label>
+          <select class="select" id="rt_reason">
+            <option value="เบิกเกินความจำเป็น">เบิกเกินความจำเป็น</option>
+            <option value="เบิกผิดรายการ">เบิกผิดรายการ</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+      </div>
+      <div class="field"><label>อ้างอิงใบเบิกเลขที่ (ถ้ามี)</label><input class="input" id="rt_refdoc" placeholder="เช่น RQ-260901-001"></div>
+      <div class="section-title" style="margin-top:6px;">รายการสติ๊กเกอร์ที่คืน</div>
+      <div class="line-items" id="rt_lines"></div>
+      <button class="btn btn-ghost btn-sm" id="rt_addline">${icon('plus',14)}เพิ่มรายการ</button>
+      <div class="field-row" style="margin-top:14px;">
+        <div class="field"><label>ผู้คืน</label><input class="input" id="rt_returner" value="${esc(getUserName())}"></div>
+      </div>
+      <div class="field"><label>หมายเหตุ</label><textarea class="input" id="rt_note" rows="2"></textarea></div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+        <button class="btn btn-ghost" id="rt_reset">ล้างฟอร์ม</button>
+        <button class="btn btn-primary" id="rt_submit">${icon('receive',16)}บันทึกใบคืน</button>
+      </div>
+    </div>
+  `;
+  renderReturnLines();
+  document.getElementById('rt_addline').addEventListener('click', ()=>{ returnLines.push(freshReturnLine()); renderReturnLines(); });
+  document.getElementById('rt_reset').addEventListener('click', ()=>{ returnLines=[freshReturnLine()]; renderReturnForm(); });
+  document.getElementById('rt_submit').addEventListener('click', submitReturn);
+}
+function renderReturnLines(){
+  const wrap = document.getElementById('rt_lines');
+  const opts = activeStickers().map(s=> `<option value="${s.id}">${esc(stickerLabel(s))}</option>`).join('');
+  wrap.innerHTML = returnLines.map(line=>{
+    const s = stickerById(line.stickerId);
+    const hasPps = pps(s) > 0;
+    const unit = hasPps ? line.unit : 'PIECE';
+    const pieces = issueLinePieces({...line, unit});
+    return `
+    <div class="line-card" data-line="${line.key}">
+      <div style="flex:none;align-self:center;">${stickerThumbHtml(s,34)}</div>
+      <select class="select" data-f="stickerId"><option value="">— เลือกสติ๊กเกอร์ —</option>${opts}</select>
+      <div class="unit-toggle" ${hasPps?'':'style="opacity:.4;pointer-events:none;"'}>
+        <button type="button" class="seg ${unit==='PIECE'?'active':''}" data-unit="PIECE">ดวง</button>
+        <button type="button" class="seg ${unit==='SHEET'?'active':''}" data-unit="SHEET">แผ่น</button>
+      </div>
+      <div class="mini-field"><label>${unit==='SHEET'?'จำนวนแผ่น':'จำนวนดวง'}</label><input class="input" type="number" min="0" data-f="qty" value="${line.qty}" placeholder="0"></div>
+      <div class="mini-readout">${unit==='SHEET' ? `= <b>${num(pieces)}</b> ดวง`:''}</div>
+      <button class="btn btn-ghost btn-icon btn-sm" data-remove-line title="ลบรายการ">${icon('trash',15)}</button>
+    </div>`;
+  }).join('');
+  returnLines.forEach(line=>{
+    const row = wrap.querySelector(`[data-line="${line.key}"]`);
+    row.querySelector('[data-f="stickerId"]').value = line.stickerId;
+    row.querySelectorAll('[data-unit]').forEach(btn=> btn.addEventListener('click', ()=>{ line.unit = btn.dataset.unit; renderReturnLines(); }));
+    row.querySelectorAll('[data-f]').forEach(inp=> inp.addEventListener('input', ()=>{ line[inp.dataset.f]=inp.value; renderReturnLines(); }));
+    const removeBtn = row.querySelector('[data-remove-line]');
+    if(removeBtn) removeBtn.addEventListener('click', ()=>{
+      returnLines = returnLines.filter(l=>l.key!==line.key);
+      if(returnLines.length===0) returnLines=[freshReturnLine()];
+      renderReturnLines();
+    });
+  });
+}
+async function submitReturn(){
+  if(!requireActiveUser()) return;
+  const validLines = returnLines.filter(l=>l.stickerId && Number(l.qty)>0);
+  if(validLines.length===0){ toast('กรุณาเพิ่มรายการสติ๊กเกอร์อย่างน้อย 1 รายการ'); return; }
+  const withPieces = validLines.map(l=>{
+    const s = stickerById(l.stickerId);
+    const unit = pps(s)>0 ? l.unit : 'PIECE';
+    return {...l, unit, pieces: issueLinePieces({...l, unit})};
+  });
+  const date = document.getElementById('rt_date').value || todayIso();
+  const reason = document.getElementById('rt_reason').value;
+  const refDocNo = document.getElementById('rt_refdoc').value.trim();
+  const returner = document.getElementById('rt_returner').value.trim() || getUserName();
+  const note = document.getElementById('rt_note').value.trim();
+  const docNo = nextDocNo('RT','returns');
+  const items = withPieces.map(l=>{
+    const s = stickerById(l.stickerId);
+    return {stickerId:l.stickerId, code:s?s.code:'', name:s?s.name:'', unit:l.unit, enteredQty:Number(l.qty), qty:l.pieces};
+  });
+  await addDoc('returns', {docNo, date, reason, refDocNo, items, returnedBy:returner, note, createdAt:nowIso()});
+  for(const it of items){
+    await addDoc('movements', {
+      stickerId:it.stickerId, stickerCode:it.code, stickerName:it.name, type:'RETURN', qty:it.qty,
+      enteredUnit:it.unit, enteredQty:it.enteredQty,
+      docType:'RETURN', docNo, note:reason, by:returner, at:nowIso(),
+    });
+  }
+  toast(`บันทึกใบคืน ${docNo} เรียบร้อย`);
+  returnLines=[freshReturnLine()];
+  goTo('docs', {tab:'returns'});
+  promptAfterSave('return', {docNo, date, reason, refDocNo, items, returnedBy:returner, note}, 'ตัวอย่างใบคืน');
+}
+
+/* =========================================================
+   VIEW: PURCHASE ORDERS (ใบสั่งซื้อ) — หน่วยแผ่น ตาม SOP โรงพิมพ์
+========================================================= */
+let poFilter = 'all';
+function renderPO(opts){
+  const el = document.getElementById('view-po');
+  const settings = getSettings();
+  const pos = cache.purchaseOrders.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  const filtered = poFilter==='all' ? pos : pos.filter(p=>p.status===poFilter);
+  const pendingTotal = pos.filter(p=>p.status==='pending').reduce((s,p)=>s+(Number(p.total)||0),0);
+  const monthKey = todayIso().slice(0,7);
+  const monthTotal = pos.filter(p=>(p.date||'').startsWith(monthKey) && p.status!=='cancelled').reduce((s,p)=>s+(Number(p.total)||0),0);
+
+  el.innerHTML = `
+    <div class="stat-grid cols-3" style="margin-bottom:18px;">
+      <div class="stat-card infoline"><div class="stat-label">ยอดสั่งซื้อค้างรับ</div><div class="stat-value">${thb(pendingTotal)}</div><div class="stat-sub">${pos.filter(p=>p.status==='pending').length} ใบ</div></div>
+      <div class="stat-card accentline"><div class="stat-label">ยอดสั่งซื้อเดือนนี้</div><div class="stat-value">${thb(monthTotal)}</div><div class="stat-sub">ไม่รวมรายการที่ยกเลิก</div></div>
+      <div class="stat-card goodline"><div class="stat-label">ใบสั่งซื้อทั้งหมด</div><div class="stat-value">${pos.length}</div><div class="stat-sub">MOQ ${num(settings.moqMin)}-${num(settings.moqMax)} แผ่น/ครั้ง</div></div>
+    </div>
+    <div class="toolbar">
+      <div class="tabs" style="border-bottom:none;margin-bottom:0;">
+        ${['all','pending','received','cancelled'].map(k=>`<button class="tab ${poFilter===k?'active':''}" data-po-filter="${k}">${({all:'ทั้งหมด',pending:'รอรับของ',received:'รับแล้ว',cancelled:'ยกเลิก'})[k]}</button>`).join('')}
+      </div>
+      <button class="btn btn-primary" id="createPOBtn">${icon('plus',15)}สร้างใบสั่งซื้อ</button>
+    </div>
+    <div class="card">
+      ${filtered.length===0? `<div class="empty-state">${icon('po',30)}<div>ไม่มีใบสั่งซื้อในหมวดนี้</div></div>` : `
+      <div class="table-wrap"><table><thead><tr>
+        <th class="left">เลขที่</th><th class="left">เลขที่จากโรงพิมพ์</th><th class="left">วันที่</th><th>รวมแผ่น</th><th>ยอดรวม (รวม VAT)</th><th>สถานะ</th><th></th>
+      </tr></thead><tbody>
+        ${filtered.map(p=>{
+          const sheetsTotal = (p.items||[]).reduce((s,i)=>s+(Number(i.qty)||0),0);
+          return `<tr>
+          <td class="left mono" style="font-size:12px;">${esc(p.docNo)}</td>
+          <td class="left mono" style="font-size:12px;">${esc(p.externalDocNo||'-')}</td>
+          <td class="left">${thaiDate(p.date)}</td>
+          <td class="num">${num(sheetsTotal)}</td>
+          <td class="num">${p.total>0?thb(p.total):'-'}</td>
+          <td>${poStatusBadge(p.status)}</td>
+          <td style="white-space:nowrap;">
+            <button class="btn btn-ghost btn-sm" data-po-print="${p.id}">${icon('print',14)}พิมพ์</button>
+            ${p.status==='pending'?`<button class="btn btn-ghost btn-sm" data-po-edit="${p.id}">${icon('edit',14)}แก้ไข</button>
+            <button class="btn btn-sm btn-primary" data-po-receive="${p.id}">รับเข้าคลัง</button>
+            <button class="btn btn-ghost btn-sm btn-danger" data-po-cancel="${p.id}">ยกเลิก</button>`:''}
+            ${p.status==='cancelled'?`<button class="btn btn-ghost btn-sm btn-danger" data-po-delete="${p.id}" title="ลบใบสั่งซื้อนี้ออกถาวร">${icon('trash',14)}ล้างข้อมูล</button>`:''}
+          </td>
+        </tr>`;}).join('')}
+      </tbody></table></div>`}
+    </div>
+  `;
+  el.querySelectorAll('[data-po-filter]').forEach(b=> b.addEventListener('click', ()=>{ poFilter=b.dataset.poFilter; renderPO(); }));
+  document.getElementById('createPOBtn').addEventListener('click', ()=>{ if(!requireActiveUser()) return; openPOModal(); });
+  el.querySelectorAll('[data-po-print]').forEach(b=> b.addEventListener('click', ()=>{
+    const p = cache.purchaseOrders.find(x=>x.id===b.dataset.poPrint);
+    if(p) openPrintPreview(buildDocPrintHtml('po', p), {title:'ตัวอย่างใบสั่งซื้อ', onPrint:()=>printDocument('po',p), onImage:()=>chooseImageFormat(mode=>saveDocumentImage('po',p,mode))});
+  }));
+  el.querySelectorAll('[data-po-edit]').forEach(b=> b.addEventListener('click', ()=>{
+    const p = cache.purchaseOrders.find(x=>x.id===b.dataset.poEdit); if(p) openPOModal(p);
+  }));
+  el.querySelectorAll('[data-po-receive]').forEach(b=> b.addEventListener('click', ()=>{
+    const p = cache.purchaseOrders.find(x=>x.id===b.dataset.poReceive);
+    if(p){ poPrefill = p; goTo('receive', {prefillPO:p}); }
+  }));
+  el.querySelectorAll('[data-po-cancel]').forEach(b=> b.addEventListener('click', async ()=>{
+    const ok = await confirmDialog('ยกเลิกใบสั่งซื้อ','ต้องการยกเลิกใบสั่งซื้อนี้หรือไม่?');
+    if(ok){ await updateDoc('purchaseOrders', b.dataset.poCancel, {status:'cancelled'}); toast('ยกเลิกใบสั่งซื้อแล้ว'); }
+  }));
+  el.querySelectorAll('[data-po-delete]').forEach(b=> b.addEventListener('click', async ()=>{
+    const p = cache.purchaseOrders.find(x=>x.id===b.dataset.poDelete);
+    const ok = await confirmDialog('ล้างข้อมูลใบสั่งซื้อ', `ต้องการลบใบสั่งซื้อ ${p?.docNo||''} ที่ยกเลิกแล้วออกถาวรหรือไม่? การลบนี้ไม่สามารถกู้คืนได้`);
+    if(ok){ await deleteDoc('purchaseOrders', b.dataset.poDelete); toast('ลบใบสั่งซื้อออกจากระบบแล้ว'); }
+  }));
+  if(opts && opts.openCreateFor){ if(requireActiveUser()) openPOModal(null, opts.openCreateFor); }
+}
+function poStatusBadge(st){
+  if(st==='pending') return `<span class="badge badge-warning">รอรับของ</span>`;
+  if(st==='received') return `<span class="badge badge-ok">รับแล้ว</span>`;
+  return `<span class="badge badge-neutral">ยกเลิก</span>`;
+}
+
+let poLines = [];
+let poEditing = null;
+function freshPOLine(stickerId, price){ return {key:uid(), stickerId:stickerId||'', qty:'', price:price||'', note:''}; }
+function openPOModal(existing, presetStickerId){
+  poEditing = existing || null;
+  const settings = getSettings();
+  if(existing){
+    poLines = existing.items.map(it=>({key:uid(), stickerId:it.stickerId, qty:it.qty, price:it.unitCost||'', note:it.note||''}));
+  } else if(presetStickerId){
+    const ids = Array.isArray(presetStickerId) ? presetStickerId : [presetStickerId];
+    poLines = ids.filter(Boolean).map(id=>{ const s = stickerById(id); return freshPOLine(id, s?.pricePerSheet||''); });
+    if(poLines.length===0) poLines = [freshPOLine()];
+  } else {
+    poLines = [freshPOLine()];
+  }
+  const docNo = existing ? existing.docNo : nextDocNo('PO','purchaseOrders');
+  const orderDate = existing?.date || todayIso();
+  openModal(`
+    <div class="modal-head"><h3>${existing?'แก้ไขใบสั่งซื้อ':'ใบสั่งซื้อสติ๊กเกอร์'}</h3><button class="btn btn-ghost btn-icon" data-close-modal>${icon('close',16)}</button></div>
+    <div class="modal-body">
+      <div class="banner info" style="margin-bottom:14px;">${icon('po',18)}<div>ผู้กรอก: <b>${esc(getUserName()||'— ยังไม่ได้เลือกผู้ใช้งาน —')}</b> → ส่งให้ <b>${esc(settings.approverName)}</b> ตรวจทานและอนุมัติ ก่อนส่งให้โรงพิมพ์ ${settings.printerName?('('+esc(settings.printerName)+')'):''}</div></div>
+      <div class="field-row3">
+        <div class="field"><label>เลขที่</label><input class="input mono" value="${docNo}" disabled></div>
+        <div class="field"><label>วันที่สั่งซื้อ</label><input class="input" type="date" id="po_date" value="${orderDate}"></div>
+        <div class="field"><label>วันที่คาดว่าจะได้รับ</label><input class="input" type="date" id="po_expected" value="${existing?.expectedDate||addDays(orderDate, settings.leadTimeMaxDays)}"></div>
+      </div>
+      <div class="field-row3">
+        <div class="field"><label>ผู้จำหน่าย/โรงพิมพ์</label><input class="input" id="po_supplier" value="${esc(existing?.supplier||settings.printerName)}"></div>
+        <div class="field"><label>เจ้าหน้าที่ติดต่อ</label><input class="input" id="po_contact" value="${esc(existing?.contact||settings.printerContact)}"></div>
+        <div class="field"><label>เลขที่เอกสารจากโรงพิมพ์ (ถ้ามี — กรอกทีหลังได้เมื่อได้ใบเสนอราคา)</label><input class="input" id="po_external" value="${esc(existing?.externalDocNo||'')}" placeholder="เช่น TS0066"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px;">
+        <div class="section-title" style="margin-top:0;">รายการสั่งซื้อ (หน่วยแผ่น) — <span id="po_sheets_header" class="subtle" style="font-weight:500;"></span></div>
+        <button class="btn btn-primary btn-sm" id="po_addline">${icon('plus',14)}เพิ่มรายการสั่งสติ๊กเกอร์</button>
+      </div>
+      <div class="section-desc">ราคา/แผ่น ไม่บังคับตอนสร้างใบสั่ง — กรอกภายหลังได้เมื่อได้รับใบเสนอราคาจากโรงพิมพ์ (แก้ไขใบสั่งซื้อนี้ได้ตลอดเวลาที่ยังรอรับของ)</div>
+      <div id="po_moq_warn"></div>
+      <div class="line-items" id="po_lines"></div>
+      <div style="margin-top:8px;"><button class="btn btn-ghost btn-sm" id="po_addline2">${icon('plus',14)}เพิ่มรายการ</button></div>
+      <label class="chk" style="margin-top:12px;"><input type="checkbox" id="po_vat" ${existing?(existing.vatApplied?'checked':''):'checked'}> รวม VAT ${(settings.vatRate*100).toFixed(0)}% ในยอดสั่งซื้อ (ถ้ามีราคา)</label>
+      <div class="field" style="margin-top:12px;"><label>หมายเหตุ (รวมทั้งใบ)</label><textarea class="input" id="po_note" rows="2">${esc(existing?.note||'')}</textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>ยกเลิก</button>
+      <button class="btn btn-primary" id="po_submit">${existing?'บันทึกการแก้ไข':'บันทึกใบสั่งซื้อ'}</button>
+    </div>
+  `, {large:true});
+  renderPOLines();
+  const addPoLine = ()=>{ poLines.push(freshPOLine()); renderPOLines(); };
+  document.getElementById('po_addline').addEventListener('click', addPoLine);
+  document.getElementById('po_addline2').addEventListener('click', addPoLine);
+  document.getElementById('po_vat').addEventListener('change', renderPOLines);
+  document.getElementById('po_submit').addEventListener('click', submitPO);
+}
+function renderPOLines(){
+  const wrap = document.getElementById('po_lines');
+  const settings = getSettings();
+  const opts = stickerOptionsHtml();
+  const vatChecked = document.getElementById('po_vat')?.checked ?? true;
+  let sheetsTotal = 0, subtotal = 0;
+  wrap.innerHTML = `
+    <div class="line-item-row head po-cols"><div></div><div>สติ๊กเกอร์</div><div>จำนวนแผ่น</div><div>ราคา/แผ่น</div><div>หมายเหตุ</div><div>จำนวนเงิน</div><div></div></div>
+    ${poLines.map(line=>{
+      const qty = Number(line.qty)||0, price = Number(line.price)||0;
+      const amount = qty*price;
+      sheetsTotal += qty; subtotal += amount;
+      return `
+      <div class="line-item-row po-cols" data-line="${line.key}">
+        <div style="display:flex;align-items:center;">${stickerThumbHtml(stickerById(line.stickerId),34)}</div>
+        <div><label class="li-label">สติ๊กเกอร์</label><select class="select" data-f="stickerId"><option value="">— เลือกสติ๊กเกอร์ —</option>${opts}</select></div>
+        <div><label class="li-label">จำนวนแผ่น</label><input class="input" type="number" min="0" data-f="qty" value="${line.qty}" placeholder="0"></div>
+        <div><label class="li-label">ราคา/แผ่น</label><input class="input" type="number" min="0" step="0.01" data-f="price" value="${line.price}" placeholder="ไม่บังคับ"></div>
+        <div><label class="li-label">หมายเหตุ</label><input class="input" data-f="note" value="${esc(line.note||'')}" placeholder="เช่น ลายใหม่"></div>
+        <div><label class="li-label">จำนวนเงิน</label><div class="amount-col num">${price>0?thb(amount):'-'}</div></div>
+        <div class="li-remove"><button class="btn btn-ghost btn-icon btn-sm" data-remove-line>${icon('trash',15)}</button></div>
+      </div>`;
+    }).join('')}
+    <div class="line-item-foot">
+      <span class="subtle">รวม ${num(sheetsTotal)} แผ่น ${sheetsTotal<settings.moqMin?`· ต่ำกว่า MOQ (${settings.moqMin}-${settings.moqMax})`:''}</span>
+      ${subtotal>0?`<span class="total-line">${thb(vatChecked ? subtotal*(1+settings.vatRate) : subtotal)}${vatChecked?' (รวม VAT)':''}</span>`:`<span class="subtle">ยังไม่ระบุราคา</span>`}
+    </div>
+  `;
+  const headerLabel = document.getElementById('po_sheets_header');
+  if(headerLabel) headerLabel.textContent = `รวม ${num(sheetsTotal)} แผ่นทั้งหมด`;
+  const warnBox = document.getElementById('po_moq_warn');
+  if(warnBox){
+    warnBox.innerHTML = sheetsTotal>0 && sheetsTotal<settings.moqMin
+      ? `<div class="banner">${icon('alert',18)}<div>รวม ${num(sheetsTotal)} แผ่น ต่ำกว่าขั้นต่ำที่โรงพิมพ์กำหนด (${settings.moqMin}-${settings.moqMax} แผ่นต่อครั้ง) ควรเพิ่มรายการก่อนส่งสั่งซื้อจริง</div></div>`
+      : '';
+  }
+  poLines.forEach(line=>{
+    const row = wrap.querySelector(`[data-line="${line.key}"]`);
+    row.querySelector('[data-f="stickerId"]').value = line.stickerId;
+    row.querySelectorAll('[data-f]').forEach(inp=> inp.addEventListener('input', ()=>{
+      line[inp.dataset.f]=inp.value;
+      if(inp.dataset.f==='stickerId'){
+        const s = stickerById(inp.value);
+        if(s && s.pricePerSheet && !line.price) line.price = s.pricePerSheet;
+      }
+      renderPOLines();
+    }));
+    row.querySelector('[data-remove-line]').addEventListener('click', ()=>{
+      poLines = poLines.filter(l=>l.key!==line.key);
+      if(poLines.length===0) poLines=[freshPOLine()];
+      renderPOLines();
+    });
+  });
+}
+async function submitPO(){
+  if(!requireActiveUser()) return;
+  const validLines = poLines.filter(l=>l.stickerId && Number(l.qty)>0);
+  if(validLines.length===0){ toast('กรุณาเพิ่มรายการสติ๊กเกอร์อย่างน้อย 1 รายการ'); return; }
+  const settings = getSettings();
+  const supplier = document.getElementById('po_supplier').value.trim();
+  const contact = document.getElementById('po_contact').value.trim();
+  const externalDocNo = document.getElementById('po_external').value.trim();
+  const date = document.getElementById('po_date').value || todayIso();
+  const expected = document.getElementById('po_expected').value;
+  const vatApplied = document.getElementById('po_vat').checked;
+  const note = document.getElementById('po_note').value.trim();
+  const items = validLines.map(l=>{
+    const s = stickerById(l.stickerId);
+    const qty=Number(l.qty), unitCost=Number(l.price)||0;
+    return {stickerId:l.stickerId, code:s?s.code:'', name:s?s.name:'', qty, unitCost, note:(l.note||'').trim(), amount:qty*unitCost};
+  });
+  const subtotal = items.reduce((s,i)=>s+i.amount,0);
+  const total = vatApplied ? subtotal*(1+settings.vatRate) : subtotal;
+  const payload = {date, expectedDate:expected, supplier, contact, externalDocNo, items, subtotal, total, vatApplied, note};
+  if(poEditing){
+    await updateDoc('purchaseOrders', poEditing.id, payload);
+    toast(`บันทึกการแก้ไข ${poEditing.docNo} เรียบร้อย`);
+  } else {
+    const docNo = nextDocNo('PO','purchaseOrders');
+    await addDoc('purchaseOrders', {...payload, docNo, status:'pending', createdBy:getUserName(), createdAt:nowIso()});
+    toast(`สร้างใบสั่งซื้อ ${docNo} เรียบร้อย`);
+    closeModal();
+    renderPO();
+    promptAfterSave('po', {...payload, docNo, createdBy:getUserName()}, 'ตัวอย่างใบสั่งซื้อ');
+    return;
+  }
+  closeModal();
+  renderPO();
+}
+
+/* =========================================================
+   VIEW: HISTORY (การเคลื่อนไหว)
+========================================================= */
+let histFilter = {stickerId:'', type:'', from:'', to:''};
+function renderHistory(){
+  const el = document.getElementById('view-history');
+  let rows = cache.movements.slice().sort((a,b)=>(b.at||'').localeCompare(a.at||''));
+  if(histFilter.stickerId) rows = rows.filter(m=>m.stickerId===histFilter.stickerId);
+  if(histFilter.type) rows = rows.filter(m=>m.type===histFilter.type);
+  if(histFilter.from) rows = rows.filter(m=> (m.at||'').slice(0,10) >= histFilter.from);
+  if(histFilter.to) rows = rows.filter(m=> (m.at||'').slice(0,10) <= histFilter.to);
+  const stickerOpts = activeStickers().map(s=>`<option value="${s.id}" ${histFilter.stickerId===s.id?'selected':''}>${esc(stickerLabel(s))}</option>`).join('');
+  el.innerHTML = `
+    <div class="card card-pad" style="margin-bottom:14px;">
+      <div class="field-row3">
+        <div class="field"><label>สติ๊กเกอร์</label><select class="select" id="h_sticker"><option value="">ทั้งหมด</option>${stickerOpts}</select></div>
+        <div class="field"><label>ประเภท</label><select class="select" id="h_type">
+          <option value="">ทั้งหมด</option><option value="IN" ${histFilter.type==='IN'?'selected':''}>รับเข้า</option>
+          <option value="OUT" ${histFilter.type==='OUT'?'selected':''}>เบิกออก</option><option value="ADJUST" ${histFilter.type==='ADJUST'?'selected':''}>ปรับปรุง</option>
+        </select></div>
+        <div class="field-row" style="margin:0;">
+          <div class="field"><label>จากวันที่</label><input class="input" type="date" id="h_from" value="${histFilter.from}"></div>
+          <div class="field"><label>ถึงวันที่</label><input class="input" type="date" id="h_to" value="${histFilter.to}"></div>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar"><div class="toolbar-left"><span style="color:var(--text-muted);font-size:13px;">พบ ${rows.length} รายการ</span></div>
+      <button class="btn btn-ghost btn-sm" id="exportHistBtn">${icon('download',14)}ส่งออก CSV</button>
+    </div>
+    <div class="card">
+      ${rows.length===0? `<div class="empty-state">${icon('history',30)}<div>ไม่พบรายการเคลื่อนไหว</div></div>` : `
+      <div class="table-wrap"><table><thead><tr>
+        <th class="left">วันเวลา</th><th class="left">ประเภท</th><th class="left">สติ๊กเกอร์</th><th>จำนวน (ดวง)</th><th class="left">ที่กรอกจริง</th><th>ราคา/ดวง</th><th class="left">เอกสาร</th><th class="left">หมายเหตุ</th><th class="left">โดย</th><th></th>
+      </tr></thead><tbody>${rows.map(rowMovementFull).join('')}</tbody></table></div>`}
+    </div>
+  `;
+  document.getElementById('h_sticker').addEventListener('change', e=>{ histFilter.stickerId=e.target.value; renderHistory(); });
+  document.getElementById('h_type').addEventListener('change', e=>{ histFilter.type=e.target.value; renderHistory(); });
+  document.getElementById('h_from').addEventListener('change', e=>{ histFilter.from=e.target.value; renderHistory(); });
+  document.getElementById('h_to').addEventListener('change', e=>{ histFilter.to=e.target.value; renderHistory(); });
+  document.getElementById('exportHistBtn').addEventListener('click', ()=>{
+    const out = [['วันเวลา','ประเภท','สติ๊กเกอร์','จำนวน(ดวง)','หน่วยที่กรอก','จำนวนที่กรอก','ราคาต่อดวง','เอกสาร','หมายเหตุ','โดย']];
+    rows.forEach(m=> out.push([thaiDateTime(m.at), m.type, m.stickerName||'', m.qty, m.enteredUnit==='SHEET'?'แผ่น':'ดวง', m.enteredQty??m.qty, m.unitCost||'', m.docNo||'', m.note||'', m.by||'']));
+    downloadCsv(out, `movements-${todayIso()}.csv`);
+  });
+  el.querySelectorAll('[data-mv-delete]').forEach(b=> b.addEventListener('click', async ()=>{
+    const ok = await confirmDialog('ลบรายการปรับปรุงสต็อก', 'ต้องการลบรายการปรับปรุงสต็อกนี้หรือไม่? ระบบจะคำนวณยอดคงเหลือใหม่ทันที การลบนี้ไม่สามารถกู้คืนได้');
+    if(ok){ await deleteDoc('movements', b.dataset.mvDelete); toast('ลบรายการปรับปรุงสต็อกแล้ว'); }
+  }));
+}
+function rowMovementFull(m){
+  const typeBadge = m.type==='IN' ? `<span class="badge badge-ok">รับเข้า</span>` : m.type==='OUT' ? `<span class="badge badge-critical">เบิกออก</span>` : `<span class="badge badge-info">ปรับปรุง</span>`;
+  const sign = m.type==='OUT' ? '-' : (m.type==='ADJUST' && m.qty<0 ? '' : '+');
+  const entered = m.enteredUnit==='SHEET' ? `${num(m.enteredQty)} แผ่น` : (m.enteredUnit==='PIECE' ? `${num(m.enteredQty)} ดวง` : '-');
+  const nameCell = m.stickerCode ? `${esc(m.stickerCode)} · ${esc(m.stickerName||'-')}` : esc(m.stickerName||'-');
+  return `<tr>
+    <td class="left">${thaiDateTime(m.at)}</td>
+    <td class="left">${typeBadge}</td>
+    <td class="left">${nameCell}</td>
+    <td class="num">${sign}${num(m.qty)}</td>
+    <td class="left subtle">${entered}</td>
+    <td class="num">${m.unitCost?thb(m.unitCost):'-'}</td>
+    <td class="left mono" style="font-size:12px;">${esc(m.docNo||'-')}</td>
+    <td class="left">${esc(m.note||'-')}</td>
+    <td class="left">${esc(m.by||'-')}</td>
+    <td>${m.type==='ADJUST'?`<button class="btn btn-ghost btn-icon btn-sm btn-danger" data-mv-delete="${m.id}" title="ลบรายการปรับปรุงนี้">${icon('trash',14)}</button>`:''}</td>
+  </tr>`;
+}
+
+/* =========================================================
+   VIEW: DOCS (เอกสารทั้งหมด)
+========================================================= */
+let docsTab = 'purchaseOrders';
+function renderDocs(opts){
+  if(opts && opts.tab) docsTab = opts.tab;
+  const el = document.getElementById('view-docs');
+  const tabs = [{k:'purchaseOrders',l:'ใบสั่งซื้อ'},{k:'receipts',l:'ใบรับ'},{k:'requisitions',l:'ใบเบิก'},{k:'returns',l:'ใบคืน'},{k:'adjustments',l:'รายการปรับปรุงจำนวน'}];
+  el.innerHTML = `
+    <div class="tabs">${tabs.map(t=>`<button class="tab ${docsTab===t.k?'active':''}" data-doctab="${t.k}">${t.l}</button>`).join('')}</div>
+    <div class="card" id="docsTableWrap"></div>
+  `;
+  el.querySelectorAll('[data-doctab]').forEach(b=> b.addEventListener('click', ()=>{ docsTab=b.dataset.doctab; renderDocs(); }));
+  renderDocsTable();
+}
+function renderDocsTable(){
+  const wrap = document.getElementById('docsTableWrap');
+  const list = docsTab==='adjustments'
+    ? cache.movements.filter(m=>m.type==='ADJUST').slice().sort((a,b)=>(b.at||'').localeCompare(a.at||''))
+    : cache[docsTab].slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||''));
+  if(list.length===0){ wrap.innerHTML = `<div class="empty-state">${icon('docs',30)}<div>ยังไม่มีเอกสารในหมวดนี้</div></div>`; return; }
+  if(docsTab==='receipts'){
+    wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="left">เลขที่ใบรับ</th><th class="left">วันที่</th><th class="left">ผู้จำหน่าย</th><th>จำนวนรายการ</th><th class="left">ผู้รับของ</th><th></th></tr></thead><tbody>
+      ${list.map(d=>`<tr><td class="left mono" style="font-size:12px;">${esc(d.docNo)}</td><td class="left">${thaiDate(d.date)}</td><td class="left">${esc(d.supplier||'-')}</td><td class="num">${(d.items||[]).length}</td><td class="left">${esc(d.receivedBy||'-')}</td><td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" data-print="${d.id}">${icon('print',14)}พิมพ์</button></td></tr>`).join('')}
+    </tbody></table></div>`;
+  } else if(docsTab==='requisitions'){
+    wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="left">เลขที่ใบเบิก</th><th class="left">วันที่</th><th class="left">ผู้เบิก</th><th></th></tr></thead><tbody>
+      ${list.map(d=>`<tr><td class="left mono" style="font-size:12px;">${esc(d.docNo)}</td><td class="left">${thaiDate(d.date)}</td><td class="left">${esc(d.issuedBy||'-')}</td><td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" data-print="${d.id}">${icon('print',14)}พิมพ์</button></td></tr>`).join('')}
+    </tbody></table></div>`;
+  } else if(docsTab==='returns'){
+    wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="left">เลขที่ใบคืน</th><th class="left">วันที่</th><th class="left">เหตุผล</th><th class="left">ผู้คืน</th><th></th></tr></thead><tbody>
+      ${list.map(d=>`<tr><td class="left mono" style="font-size:12px;">${esc(d.docNo)}</td><td class="left">${thaiDate(d.date)}</td><td class="left">${esc(d.reason||'-')}</td><td class="left">${esc(d.returnedBy||'-')}</td><td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" data-print="${d.id}">${icon('print',14)}พิมพ์</button></td></tr>`).join('')}
+    </tbody></table></div>`;
+  } else if(docsTab==='adjustments'){
+    wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="left">เลขที่</th><th class="left">วันที่</th><th class="left">สติ๊กเกอร์</th><th>จำนวนที่ปรับ</th><th class="left">เหตุผล</th><th class="left">โดย</th><th></th></tr></thead><tbody>
+      ${list.map(m=>{
+        const nameCell = m.stickerCode ? `${esc(m.stickerCode)} · ${esc(m.stickerName||'-')}` : esc(m.stickerName||'-');
+        const sign = m.qty<0 ? '' : '+';
+        return `<tr><td class="left mono" style="font-size:12px;">${esc(m.docNo||'-')}</td><td class="left">${thaiDate((m.at||'').slice(0,10))}</td><td class="left">${nameCell}</td><td class="num">${sign}${num(m.qty)} ดวง</td><td class="left">${esc(m.note||'-')}</td><td class="left">${esc(m.by||'-')}</td><td style="white-space:nowrap;"><button class="btn btn-ghost btn-icon btn-sm btn-danger" data-mv-delete="${m.id}" title="ลบรายการปรับปรุงนี้">${icon('trash',14)}</button></td></tr>`;
+      }).join('')}
+    </tbody></table></div>`;
+  } else {
+    wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="left">เลขที่ PO</th><th class="left">เลขที่โรงพิมพ์</th><th class="left">วันที่</th><th>ยอดรวม</th><th>สถานะ</th><th></th></tr></thead><tbody>
+      ${list.map(d=>`<tr><td class="left mono" style="font-size:12px;">${esc(d.docNo)}</td><td class="left mono" style="font-size:12px;">${esc(d.externalDocNo||'-')}</td><td class="left">${thaiDate(d.date)}</td><td class="num">${thb(d.total)}</td><td>${poStatusBadge(d.status)}</td><td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" data-print="${d.id}">${icon('print',14)}พิมพ์</button></td></tr>`).join('')}
+    </tbody></table></div>`;
+  }
+  const docTitleMap = {receipts:'ตัวอย่างใบรับสินค้า', requisitions:'ตัวอย่างใบเบิก', returns:'ตัวอย่างใบคืน', purchaseOrders:'ตัวอย่างใบสั่งซื้อ'};
+  wrap.querySelectorAll('[data-print]').forEach(b=> b.addEventListener('click', ()=>{
+    const d = cache[docsTab].find(x=>x.id===b.dataset.print);
+    const typeMap = {receipts:'receipt', requisitions:'requisition', returns:'return', purchaseOrders:'po'};
+    if(d) openPrintPreview(buildDocPrintHtml(typeMap[docsTab], d), {title:docTitleMap[docsTab], onPrint:()=>printDocument(typeMap[docsTab],d), onImage:()=>chooseImageFormat(mode=>saveDocumentImage(typeMap[docsTab],d,mode))});
+  }));
+  wrap.querySelectorAll('[data-mv-delete]').forEach(b=> b.addEventListener('click', async ()=>{
+    const ok = await confirmDialog('ลบรายการปรับปรุงสต็อก', 'ต้องการลบรายการปรับปรุงสต็อกนี้หรือไม่? ระบบจะคำนวณยอดคงเหลือใหม่ทันที การลบนี้ไม่สามารถกู้คืนได้');
+    if(ok){ await deleteDoc('movements', b.dataset.mvDelete); toast('ลบรายการปรับปรุงสต็อกแล้ว'); }
+  }));
+}
+
+/* =========================================================
+   VIEW: STOCK COUNT (ใบตรวจนับสต็อค) — นับจริง เทียบระบบ ปรับปรุงพร้อมสาเหตุ
+========================================================= */
+let stockCountDate = todayIso();
+let stockCountCounter = '';
+let stockCountRows = null;
+let stockCountSortDir = 'asc';
+function sortedStockCountEntries(){
+  const entries = stockCountRows.map(row=> ({row, s: stickerById(row.stickerId)})).filter(x=> !!x.s);
+  entries.sort((a,b)=>{
+    const askip = !!a.row.skip, bskip = !!b.row.skip;
+    if(askip!==bskip) return askip ? 1 : -1;
+    const cmp = (a.s.code||'').localeCompare(b.s.code||'');
+    return stockCountSortDir==='asc' ? cmp : -cmp;
+  });
+  return entries;
+}
+function ensureStockCountRows(){
+  if(!stockCountRows){
+    stockCountRows = activeStickers().map(s=> ({stickerId:s.id, actual:'', reason:'', skip:!!s.excludeFromCount}));
+  }
+}
+function renderStockCount(){
+  const el = document.getElementById('view-stockcount');
+  ensureStockCountRows();
+  const settings = getSettings();
+  if(!stockCountCounter) stockCountCounter = settings.stockCounterName || getUserName();
+  el.innerHTML = `
+    <div class="card card-pad">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <div class="section-title" style="margin-bottom:0;">ตรวจนับสต็อคสติ๊กเกอร์จริง</div>
+        <button class="btn btn-primary" id="sc_submit">${icon('adjust',16)}บันทึกผลนับสต็อค</button>
+      </div>
+      <div class="section-desc">พิมพ์ใบนี้ไปนับของจริงก่อน แล้วนำจำนวนที่นับได้มากรอกในตาราง ระบบจะเทียบกับยอดในระบบให้อัตโนมัติ หากไม่ตรงต้องระบุสาเหตุก่อนบันทึก (ควรนับอย่างน้อยทุก ${settings.stockCountCycleDays} วัน) — รายการที่ติ๊ก "ไม่ต้องนับ" จะไม่ขึ้นในใบพิมพ์และไม่ต้องกรอกอีก</div>
+      <div class="field-row3">
+        <div class="field"><label>วันที่นับ</label><input class="input" type="date" id="sc_date" value="${stockCountDate}"></div>
+        <div class="field"><label>ผู้นับ</label><input class="input" id="sc_counter" value="${esc(stockCountCounter)}"></div>
+        <div class="field" style="display:flex;align-items:flex-end;gap:8px;">
+          <button class="btn btn-ghost" id="sc_print" style="flex:1;">${icon('print',15)}พิมพ์ใบสำหรับนับ</button>
+          <button class="btn btn-ghost" id="sc_reset" style="flex:1;">เริ่มนับใหม่</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px;">
+      <div class="table-wrap"><table><thead><tr>
+        <th>ไม่ต้องนับ</th><th></th><th class="left"><button type="button" class="sort-th-btn" id="scSortBtn" title="เรียงตามรหัส A-Z / Z-A">รหัส <span class="sort-arrow">${stockCountSortDir==='asc'?'▲':'▼'}</span></button></th><th class="left">ชื่อสติ๊กเกอร์</th><th>ระบบ (ดวง)</th><th>นับได้จริง (ดวง)</th><th>ผลต่าง</th><th class="left">สาเหตุ (กรณีไม่ตรง)</th>
+      </tr></thead><tbody id="sc_rows"></tbody></table></div>
+    </div>
+  `;
+  renderStockCountRows();
+  document.getElementById('sc_date').addEventListener('change', e=> stockCountDate = e.target.value);
+  document.getElementById('sc_counter').addEventListener('input', e=> stockCountCounter = e.target.value);
+  document.getElementById('sc_print').addEventListener('click', ()=>{
+    openPrintPreview(buildStockCountPrintHtml(), {title:'ตัวอย่างใบตรวจนับสต็อค', onPrint:printStockCountSheet, onImage:()=>chooseImageFormat(mode=>saveStockCountImage(mode)), padding:'8mm 10mm'});
+  });
+  document.getElementById('sc_reset').addEventListener('click', async ()=>{
+    const ok = await confirmDialog('เริ่มนับใหม่', 'ต้องการล้างจำนวนที่กรอกไว้ทั้งหมดและเริ่มนับใหม่หรือไม่?');
+    if(!ok) return;
+    stockCountRows = null; renderStockCount();
+  });
+  document.getElementById('sc_submit').addEventListener('click', submitStockCount);
+  const scSortBtn = document.getElementById('scSortBtn');
+  if(scSortBtn) scSortBtn.addEventListener('click', ()=>{ stockCountSortDir = stockCountSortDir==='asc'?'desc':'asc'; renderStockCount(); });
+}
+function renderStockCountRows(){
+  const tbody = document.getElementById('sc_rows');
+  const stockMap = computeStockMap();
+  tbody.innerHTML = sortedStockCountEntries().map(({row,s})=>{
+    const skipped = !!row.skip;
+    return `<tr data-row="${row.stickerId}" style="${skipped?'opacity:.5;':''}">
+      <td style="text-align:center;"><input type="checkbox" data-f="skip" ${skipped?'checked':''} title="ปิดการนับสติ๊กเกอร์นี้ — จะไม่ขึ้นในใบพิมพ์และเลื่อนลงด้านล่าง"></td>
+      <td>${stickerThumbHtml(s,32)}</td>
+      <td class="left mono" style="font-size:12px;">${esc(s.code||'-')}</td>
+      <td class="left">${esc(s.name)}</td>
+      <td class="num">${num(stockMap[s.id]?.stock||0)}</td>
+      <td><input class="input" type="number" data-f="actual" value="${row.actual}" placeholder="กรอกจำนวน" style="max-width:120px;" ${skipped?'disabled':''}></td>
+      <td data-diffcell class="num">${skipped?'<span class="badge badge-neutral">ข้าม</span>':'-'}</td>
+      <td><input class="input" data-f="reason" value="${esc(row.reason)}" placeholder="ระบุสาเหตุถ้าไม่ตรง" ${skipped?'disabled':''}></td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('tr').forEach(tr=>{
+    const row = stockCountRows.find(r=>r.stickerId===tr.dataset.row);
+    if(!row) return;
+    const sys = stockMap[row.stickerId]?.stock || 0;
+    const actualInput = tr.querySelector('[data-f="actual"]');
+    const reasonInput = tr.querySelector('[data-f="reason"]');
+    const skipInput = tr.querySelector('[data-f="skip"]');
+    const diffCell = tr.querySelector('[data-diffcell]');
+    function updateDiffCell(){
+      if(row.skip){ diffCell.innerHTML = '<span class="badge badge-neutral">ข้าม</span>'; return; }
+      const hasActual = row.actual!=='' && row.actual!=null;
+      const diff = hasActual ? (Number(row.actual)-sys) : null;
+      diffCell.innerHTML = !hasActual ? '-' : (diff===0 ? `<span class="badge badge-ok">ตรง</span>` : `<span class="badge ${diff>0?'badge-warning':'badge-critical'}">${diff>0?'+':''}${num(diff)}</span>`);
+    }
+    updateDiffCell();
+    actualInput.addEventListener('input', ()=>{ row.actual = actualInput.value; updateDiffCell(); });
+    reasonInput.addEventListener('input', ()=>{ row.reason = reasonInput.value; });
+    skipInput.addEventListener('change', async ()=>{
+      row.skip = skipInput.checked;
+      await updateDoc('stickers', row.stickerId, {excludeFromCount: row.skip});
+      renderStockCountRows();
+    });
+  });
+}
+function buildStockCountPrintHtml(){
+  const settings = getSettings();
+  const stockMap = computeStockMap();
+  const list = activeStickers().filter(s=>!s.excludeFromCount).slice().sort((a,b)=> stockCountSortDir==='asc' ? (a.code||'').localeCompare(b.code||'') : (b.code||'').localeCompare(a.code||''));
+  const rows = list.map(s=>`<tr><td style="text-align:center;">${stickerThumbHtml(s,22)}</td><td>${esc(s.code||'-')}</td><td>${esc(s.name)}</td><td style="text-align:center;">${num(stockMap[s.id]?.stock||0)}</td><td style="text-align:center;"></td><td></td></tr>`).join('');
+  return `
+  <div class="count-sheet">
+    <div class="doc-head">
+      <div><div class="brandline">NLCOFFEE ROASTING</div><h1>${esc(settings.companyName)}</h1><div class="brandline">ระบบจัดการสติ๊กเกอร์</div></div>
+      <div class="doc-meta"><div class="doc-title-tag">ใบตรวจนับสต็อคสติ๊กเกอร์ (1 แผ่น)</div><div>วันที่นับ: ${thaiDate(stockCountDate)}</div><div>ผู้นับ: ${esc(stockCountCounter||settings.stockCounterName||'-')}</div></div>
+    </div>
+    <table class="print-table"><thead><tr><th style="text-align:center;">รูป</th><th>รหัส</th><th>รายการ</th><th style="text-align:center;">ระบบ (ดวง)</th><th style="text-align:center;">นับได้จริง (ดวง)</th><th>สาเหตุ (ถ้าไม่ตรง)</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="sign-grid">${['ผู้นับ','ผู้ตรวจทาน'].map(l=>`<div><div class="sign-line">${l}</div></div>`).join('')}</div>
+  </div>
+  `;
+}
+function printStockCountSheet(){
+  document.getElementById('printArea').innerHTML = buildStockCountPrintHtml();
+  document.body.classList.add('printing');
+  setTimeout(()=>{ window.print(); }, 60);
+}
+async function saveStockCountImage(mode){
+  if(typeof html2canvas==='undefined'){
+    toast('ไม่พร้อมใช้งานฟีเจอร์บันทึกรูปภาพในขณะนี้ ลองใช้ปุ่มพิมพ์แทน');
+    return;
+  }
+  const isMobile = mode==='mobile';
+  const area = document.getElementById('printArea');
+  area.innerHTML = buildStockCountPrintHtml();
+  area.classList.toggle('mobile-doc', isMobile);
+  document.body.classList.add('capturing');
+  await new Promise(r=> setTimeout(r, 80));
+  try{
+    const canvas = await html2canvas(area, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    document.body.classList.remove('capturing');
+    area.classList.remove('mobile-doc');
+    if(!downloadsApi){
+      toast('ไม่พบช่องทางบันทึกไฟล์ในเบราว์เซอร์นี้ ลองใช้ปุ่มพิมพ์แทน');
+      return;
+    }
+    const blob = await new Promise(resolve=> canvas.toBlob(resolve, 'image/png'));
+    if(!blob){ toast('สร้างรูปภาพไม่สำเร็จ'); return; }
+    await downloadsApi.save({filename:`stockcount-${stockCountDate||todayIso()}${isMobile?'-mobile':'-a4'}.png`, data: blob});
+    toast('บันทึกรูปภาพเรียบร้อย');
+  }catch(e){
+    document.body.classList.remove('capturing');
+    area.classList.remove('mobile-doc');
+    if(e && e.code==='declined') return;
+    console.error(e);
+    toast('เกิดข้อผิดพลาดในการสร้างรูปภาพ');
+  }
+}
+async function submitStockCount(){
+  if(!requireActiveUser()) return;
+  const stockMap = computeStockMap();
+  const withActual = stockCountRows.filter(r=> !r.skip && r.actual!=='' && r.actual!=null && !isNaN(Number(r.actual)));
+  if(withActual.length===0){ toast('กรุณากรอกจำนวนที่นับได้อย่างน้อย 1 รายการ'); return; }
+  const missingReason = withActual.filter(r=>{
+    const sys = stockMap[r.stickerId]?.stock||0;
+    const diff = Number(r.actual)-sys;
+    return diff!==0 && !r.reason.trim();
+  });
+  if(missingReason.length>0){
+    toast(`กรุณาระบุสาเหตุสำหรับรายการที่นับได้ไม่ตรง (${missingReason.length} รายการ)`);
+    return;
+  }
+  const date = stockCountDate || todayIso();
+  const counter = (stockCountCounter||'').trim() || getUserName();
+  const docNo = nextStockCountDocNo();
+  let adjustedCount = 0;
+  for(const r of withActual){
+    const s = stickerById(r.stickerId);
+    const sys = stockMap[r.stickerId]?.stock || 0;
+    const diff = Number(r.actual) - sys;
+    if(diff===0) continue;
+    adjustedCount++;
+    await addDoc('movements', {
+      stickerId:r.stickerId, stickerCode:s?s.code:'', stickerName:s?s.name:'', type:'ADJUST', qty:diff,
+      docType:'STOCKCOUNT', docNo, note:r.reason.trim(), by:counter, at:nowIso(),
+    });
+  }
+  await saveSettings({lastStockCountAt: date});
+  toast(`บันทึกผลนับสต็อค ${docNo} เรียบร้อย (ปรับ ${adjustedCount} รายการ)`);
+  stockCountRows = null;
+  goTo('dashboard');
+}
+
+/* =========================================================
+   VIEW: SETTINGS (ตั้งค่า/ข้อมูลอ้างอิง จาก SOP)
+========================================================= */
+function renderSettings(){
+  const el = document.getElementById('view-settings');
+  const s = getSettings();
+  const importedCount = activeStickers().filter(x=> CATALOG.some(c=>c.code===x.code && c.name===x.name)).length;
+  el.innerHTML = `
+    <div class="grid-2">
+      <div class="card card-pad">
+        <div class="section-title">ผู้จำหน่าย/โรงพิมพ์</div>
+        <div class="section-desc">ใช้เป็นค่าเริ่มต้นในใบรับและใบสั่งซื้อ และแสดงบนหัวเอกสารที่พิมพ์</div>
+        <div class="field"><label>ชื่อบริษัทของเรา (ใช้บนหัวเอกสาร)</label><input class="input" id="s_company" value="${esc(s.companyName)}"></div>
+        <div class="field"><label>ชื่อโรงพิมพ์คู่ค้า</label><input class="input" id="s_printer" value="${esc(s.printerName)}"></div>
+        <div class="field"><label>เจ้าหน้าที่ติดต่อ</label><input class="input" id="s_contact" value="${esc(s.printerContact)}"></div>
+        <div class="field-row">
+          <div class="field"><label>ผู้รับผิดชอบนับสต็อก</label><input class="input" id="s_counter" value="${esc(s.stockCounterName)}"></div>
+          <div class="field"><label>ผู้อนุมัติ/ชำระเงิน</label><input class="input" id="s_approver" value="${esc(s.approverName)}"></div>
+        </div>
+        <button class="btn btn-primary" id="saveSupplierBtn">บันทึก</button>
+      </div>
+
+      <div class="card card-pad">
+        <div class="section-title">เงื่อนไขการสั่งซื้อ (ตาม SOP)</div>
+        <div class="section-desc">ใช้คำนวณ VAT, เตือน MOQ และประเมินวันรับของในใบสั่งซื้อ</div>
+        <div class="field-row">
+          <div class="field"><label>ราคา/แผ่น เริ่มต้น (บาท ไม่รวม VAT)</label><input class="input" id="s_price" type="number" min="0" step="0.01" value="${s.pricePerSheet}"></div>
+          <div class="field"><label>อัตรา VAT (%)</label><input class="input" id="s_vat" type="number" min="0" step="0.1" value="${(s.vatRate*100).toFixed(1)}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>MOQ ขั้นต่ำ (แผ่น)</label><input class="input" id="s_moqmin" type="number" min="0" value="${s.moqMin}"></div>
+          <div class="field"><label>MOQ สูงสุดแนะนำ (แผ่น)</label><input class="input" id="s_moqmax" type="number" min="0" value="${s.moqMax}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>ลีดไทม์เร็วสุด (วัน)</label><input class="input" id="s_ltmin" type="number" min="0" value="${s.leadTimeMinDays}"></div>
+          <div class="field"><label>ลีดไทม์ช้าสุด (วัน)</label><input class="input" id="s_ltmax" type="number" min="0" value="${s.leadTimeMaxDays}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>รอบสั่งซื้อ ต่ำสุด (วัน)</label><input class="input" id="s_ocmin" type="number" min="0" value="${s.orderCycleMinDays}"></div>
+          <div class="field"><label>รอบสั่งซื้อ สูงสุด (วัน)</label><input class="input" id="s_ocmax" type="number" min="0" value="${s.orderCycleMaxDays}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>รอบตรวจนับสต็อค ทุกกี่วัน</label><input class="input" id="s_sccycle" type="number" min="1" value="${s.stockCountCycleDays}"></div>
+          <div class="field"><label>นับสต็อคครั้งล่าสุด</label><input class="input" id="s_sclast" type="date" value="${s.lastStockCountAt||''}"></div>
+        </div>
+        <button class="btn btn-primary" id="saveSopBtn">บันทึก</button>
+      </div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px;">
+      <div class="section-title">ทะเบียนผู้ใช้งาน</div>
+      <div class="section-desc">รายชื่อพนักงานที่เลือกเป็น "ผู้ใช้งาน" ได้ที่มุมขวาบนของหน้าจอ — ต้องเลือกผู้ใช้งานไว้ก่อนเสมอ จึงจะบันทึกหรือพิมพ์รายการต่างๆ ในระบบได้</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <input class="input" id="s_newuser" placeholder="ชื่อพนักงาน เช่น คุณวิว" style="max-width:280px;">
+        <button class="btn btn-primary btn-sm" id="s_adduser">${icon('plus',14)}เพิ่มชื่อ</button>
+      </div>
+      <div id="s_userlist" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px;">
+      <div class="section-title">ผู้มีสิทธิ์เข้าใช้แอป (Google Account)</div>
+      <div class="section-desc">เฉพาะอีเมล Google ที่อยู่ในรายชื่อนี้เท่านั้นที่ล็อกอินเข้าแอปได้ — เจ้าของระบบ (${esc(OWNER_EMAIL)}) มีสิทธิ์เข้าใช้เสมอโดยไม่ต้องเพิ่มชื่อ</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <input class="input" id="s_newaccess" type="email" placeholder="อีเมล Google เช่น name@gmail.com" style="max-width:280px;">
+        <button class="btn btn-primary btn-sm" id="s_addaccess">${icon('plus',14)}เพิ่มสิทธิ์</button>
+      </div>
+      <div id="s_accesslist" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:16px;">
+      <div class="section-title">แคตตาล็อกสติ๊กเกอร์ NLCoffee</div>
+      <div class="section-desc">นำเข้ารายชื่อลายสติ๊กเกอร์ทั้งหมด ${CATALOG.length} ลาย พร้อมขนาดและจำนวนดวง/แผ่น จากเอกสาร SOP — รายการที่มีอยู่แล้วจะไม่ถูกเพิ่มซ้ำ</div>
+      <div class="kv-row" style="margin-bottom:12px;"><span class="k">นำเข้าแล้ว</span><span class="v">${importedCount} / ${CATALOG.length} ลาย</span></div>
+      <button class="btn btn-primary" id="importCatalogBtn">${icon('upload',15)}นำเข้า/อัปเดตแคตตาล็อกทั้งหมด</button>
+    </div>
+  `;
+  document.getElementById('saveSupplierBtn').addEventListener('click', async ()=>{
+    await saveSettings({
+      companyName: document.getElementById('s_company').value.trim(),
+      printerName: document.getElementById('s_printer').value.trim(),
+      printerContact: document.getElementById('s_contact').value.trim(),
+      stockCounterName: document.getElementById('s_counter').value.trim(),
+      approverName: document.getElementById('s_approver').value.trim(),
+    });
+    toast('บันทึกข้อมูลผู้จำหน่ายแล้ว');
+  });
+  document.getElementById('saveSopBtn').addEventListener('click', async ()=>{
+    await saveSettings({
+      pricePerSheet: Number(document.getElementById('s_price').value)||0,
+      vatRate: (Number(document.getElementById('s_vat').value)||0)/100,
+      moqMin: Number(document.getElementById('s_moqmin').value)||0,
+      moqMax: Number(document.getElementById('s_moqmax').value)||0,
+      leadTimeMinDays: Number(document.getElementById('s_ltmin').value)||0,
+      leadTimeMaxDays: Number(document.getElementById('s_ltmax').value)||0,
+      orderCycleMinDays: Number(document.getElementById('s_ocmin').value)||0,
+      orderCycleMaxDays: Number(document.getElementById('s_ocmax').value)||0,
+      stockCountCycleDays: Number(document.getElementById('s_sccycle').value)||14,
+      lastStockCountAt: document.getElementById('s_sclast').value || '',
+    });
+    toast('บันทึกเงื่อนไขการสั่งซื้อแล้ว');
+  });
+  document.getElementById('importCatalogBtn').addEventListener('click', importCatalog);
+  renderUserList();
+  document.getElementById('s_adduser').addEventListener('click', addStaffUser);
+  document.getElementById('s_newuser').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); addStaffUser(); } });
+  renderAccessList();
+  document.getElementById('s_addaccess').addEventListener('click', addAccessEmail);
+  document.getElementById('s_newaccess').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); addAccessEmail(); } });
+}
+async function addAccessEmail(){
+  const input = document.getElementById('s_newaccess');
+  const email = input.value.trim().toLowerCase();
+  if(!email || !email.includes('@')){ toast('กรุณากรอกอีเมล Google ให้ถูกต้อง'); return; }
+  if(email===OWNER_EMAIL.toLowerCase()){ toast('อีเมลนี้เป็นเจ้าของระบบ มีสิทธิ์เข้าใช้อยู่แล้ว'); return; }
+  const list = (cache.access && cache.access.emails) || [];
+  if(list.includes(email)){ toast('มีอีเมลนี้ในรายชื่ออยู่แล้ว'); return; }
+  await dbApi.doc('access/allowlist').set({emails:[...list, email]});
+  input.value = '';
+  toast('เพิ่มสิทธิ์เข้าใช้งานแล้ว');
+}
+function renderAccessList(){
+  const wrap = document.getElementById('s_accesslist');
+  if(!wrap) return;
+  const list = (cache.access && cache.access.emails) || [];
+  const ownerChip = `<span class="user-chip">${esc(OWNER_EMAIL)} · เจ้าของระบบ</span>`;
+  wrap.innerHTML = ownerChip + (list.length===0
+    ? ''
+    : list.map(e=>`<span class="user-chip">${esc(e)}<button type="button" data-remove-access="${esc(e)}" title="ลบสิทธิ์เข้าใช้งาน">${icon('close',12)}</button></span>`).join(''));
+  wrap.querySelectorAll('[data-remove-access]').forEach(b=> b.addEventListener('click', async ()=>{
+    const email = b.dataset.removeAccess;
+    const ok = await confirmDialog('ลบสิทธิ์เข้าใช้งาน', `ต้องการลบสิทธิ์เข้าใช้ของ "${email}" หรือไม่?`);
+    if(!ok) return;
+    const list = ((cache.access && cache.access.emails) || []).filter(e=>e!==email);
+    await dbApi.doc('access/allowlist').set({emails:list});
+    toast('ลบสิทธิ์เข้าใช้งานแล้ว');
+  }));
+}
+async function addStaffUser(){
+  const input = document.getElementById('s_newuser');
+  const name = input.value.trim();
+  if(!name){ toast('กรุณากรอกชื่อพนักงาน'); return; }
+  const list = getSettings().staffUsers||[];
+  if(list.some(n=> n.toLowerCase()===name.toLowerCase())){ toast('มีชื่อนี้ในทะเบียนอยู่แล้ว'); return; }
+  await saveSettings({staffUsers:[...list, name]});
+  input.value = '';
+  renderUserList();
+  toast('เพิ่มผู้ใช้งานแล้ว');
+}
+function renderUserList(){
+  const wrap = document.getElementById('s_userlist');
+  if(!wrap) return;
+  const list = getSettings().staffUsers||[];
+  wrap.innerHTML = list.length===0
+    ? `<div class="subtle">ยังไม่มีรายชื่อผู้ใช้งาน — เพิ่มชื่อพนักงานด้านบนเพื่อเริ่มใช้งาน</div>`
+    : list.map(n=>`<span class="user-chip">${esc(n)}<button type="button" data-remove-user="${esc(n)}" title="ลบออกจากทะเบียน">${icon('close',12)}</button></span>`).join('');
+  wrap.querySelectorAll('[data-remove-user]').forEach(b=> b.addEventListener('click', async ()=>{
+    const name = b.dataset.removeUser;
+    const ok = await confirmDialog('ลบผู้ใช้งาน', `ต้องการลบ "${name}" ออกจากทะเบียนผู้ใช้งานหรือไม่?`);
+    if(!ok) return;
+    const list = (getSettings().staffUsers||[]).filter(n=>n!==name);
+    await saveSettings({staffUsers:list});
+    try{ if(localStorage.getItem('nlc_sticker_username')===name) localStorage.removeItem('nlc_sticker_username'); }catch(e){}
+    renderUserList();
+    renderUserSelect();
+    toast('ลบผู้ใช้งานแล้ว');
+  }));
+}
+async function importCatalog(){
+  const settings = getSettings();
+  let added = 0, skipped = 0;
+  for(const c of CATALOG){
+    const exists = cache.stickers.some(x=> x.code===c.code && x.name===c.name);
+    if(exists){ skipped++; continue; }
+    await addDoc('stickers', {
+      name:c.name, code:c.code, sizeCm:c.sizeCm, piecesPerSheet:c.piecesPerSheet, unit:'ดวง',
+      reorderPoint: c.piecesPerSheet, pricePerSheet: settings.pricePerSheet,
+      supplier: settings.printerName, note:'', active:true, createdAt: nowIso(),
+    });
+    added++;
+  }
+  await saveSettings({catalogImported:true});
+  toast(`นำเข้าแล้ว ${added} รายการใหม่ (ข้าม ${skipped} รายการที่มีอยู่แล้ว)`);
+  renderSettings();
+}
+/* =========================================================
+   PRINTING
+========================================================= */
+function buildDocPrintHtml(kind, doc){
+  const settings = getSettings();
+  const titleMap = {receipt:'ใบรับสติ๊กเกอร์', requisition:'ใบเบิกสติ๊กเกอร์', return:'ใบคืนสติ๊กเกอร์', po:'ใบสั่งซื้อสติ๊กเกอร์'};
+  const items = doc.items||[];
+  let metaHtml = '';
+  let tableHtml = '';
+  let totalHtml = '';
+  let signLabels = ['ผู้จัดทำ','ผู้ตรวจสอบ','ผู้อนุมัติ'];
+  const unitLabel = it => it.unit==='SHEET' ? `${num(it.enteredQty)} แผ่น (=${num(it.qty)} ดวง)` : `${num(it.enteredQty??it.qty)} ดวง`;
+
+  if(kind==='receipt'){
+    metaHtml = `<div>เลขที่: <b>${esc(doc.docNo)}</b></div><div>วันที่: ${thaiDate(doc.date)}</div><div>ผู้จำหน่าย: ${esc(doc.supplier||'-')}</div><div>ผู้รับของ: ${esc(doc.receivedBy||'-')}</div>${doc.poRef?`<div>อ้างอิงใบสั่งซื้อ: ${esc(doc.poRef)}</div>`:''}`;
+    tableHtml = `<table class="print-table"><thead><tr><th>#</th><th>รหัส</th><th>รายการ</th><th>จำนวนที่รับ</th></tr></thead><tbody>
+      ${items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.code||'')}</td><td>${esc(it.name)}</td><td>${unitLabel(it)}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="print-subtotal">รวม ${items.length} รายการ — เอกสารนี้บันทึกเฉพาะจำนวนที่รับเข้า ไม่มีราคา</div>`;
+    signLabels = ['ผู้ส่งของ','ผู้ตรวจนับ','ผู้รับของ'];
+  } else if(kind==='requisition'){
+    metaHtml = `<div>เลขที่: <b>${esc(doc.docNo)}</b></div><div>วันที่: ${thaiDate(doc.date)}</div><div>ผู้เบิก: ${esc(doc.issuedBy||'-')}</div>${doc.kind==='extra'?`<div>ประเภท: เบิกเพิ่มพิเศษ (เนื่องจากเบิกขาด)${doc.refDocNo?` — อ้างอิงใบเบิก ${esc(doc.refDocNo)}`:''}</div>`:''}`;
+    tableHtml = `<table class="print-table"><thead><tr><th>#</th><th>รหัส</th><th>รายการ</th><th>จำนวนที่เบิก</th></tr></thead><tbody>
+      ${items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.code||'')}</td><td>${esc(it.name)}</td><td>${unitLabel(it)}</td></tr>`).join('')}
+    </tbody></table>`;
+    signLabels = ['ผู้เบิก','ผู้จ่ายของ','ผู้อนุมัติ'];
+  } else if(kind==='return'){
+    metaHtml = `<div>เลขที่: <b>${esc(doc.docNo)}</b></div><div>วันที่: ${thaiDate(doc.date)}</div><div>เหตุผล: ${esc(doc.reason||'-')}</div>${doc.refDocNo?`<div>อ้างอิงใบเบิกเลขที่: ${esc(doc.refDocNo)}</div>`:''}<div>ผู้คืน: ${esc(doc.returnedBy||'-')}</div>`;
+    tableHtml = `<table class="print-table"><thead><tr><th>#</th><th>รหัส</th><th>รายการ</th><th>จำนวนที่คืน</th></tr></thead><tbody>
+      ${items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.code||'')}</td><td>${esc(it.name)}</td><td>${unitLabel(it)}</td></tr>`).join('')}
+    </tbody></table>`;
+    signLabels = ['ผู้คืนของ','ผู้ตรวจรับคืน','ผู้อนุมัติ'];
+  } else if(kind==='po'){
+    metaHtml = `<div>เลขที่: <b>${esc(doc.docNo)}</b></div>${doc.externalDocNo?`<div>เลขที่โรงพิมพ์: ${esc(doc.externalDocNo)}</div>`:''}<div>วันที่: ${thaiDate(doc.date)}</div>${doc.expectedDate?`<div>กำหนดรับ: ${thaiDate(doc.expectedDate)}</div>`:''}<div>ผู้จำหน่าย: ${esc(doc.supplier||'-')}</div>${doc.contact?`<div>ติดต่อ: ${esc(doc.contact)}</div>`:''}`;
+    const sheetsTotal = items.reduce((s,i)=>s+(Number(i.qty)||0),0);
+    const hasPrice = (Number(doc.subtotal)||0) > 0;
+    tableHtml = `<table class="print-table"><thead><tr><th>#</th><th>รหัส</th><th>รายการ</th><th>จำนวน (แผ่น)</th><th>หมายเหตุ</th></tr></thead><tbody>
+      ${items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.code||stickerById(it.stickerId)?.code||'')}</td><td>${esc(it.name)}</td><td>${num(it.qty)}</td><td>${esc(it.note||'')}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="print-subtotal">รวมจำนวนแผ่นทั้งหมด: ${num(sheetsTotal)} แผ่น</div>`;
+    if(hasPrice){
+      totalHtml = `<div class="print-subtotal">ยอดก่อน VAT ${thb(doc.subtotal)}</div><div class="print-total">รวมเป็นเงินทั้งสิ้น (${doc.vatApplied?'รวม VAT':'ไม่รวม VAT'}): ${thb(doc.total)}</div>`;
+    } else {
+      totalHtml = `<div class="print-subtotal">ยังไม่ระบุราคา — รอใบเสนอราคาจากโรงพิมพ์เพื่อกรอกราคาและบันทึกในขั้นตอนถัดไป</div>`;
+    }
+    signLabels = ['ผู้จัดทำ PO','ผู้อนุมัติสั่งซื้อ','ผู้จำหน่าย'];
+  }
+
+  return `
+    <div class="doc-head">
+      <div><div class="brandline">NLCOFFEE ROASTING</div><h1>${esc(settings.companyName)}</h1><div class="brandline">ระบบจัดการสติ๊กเกอร์</div></div>
+      <div class="doc-meta"><div class="doc-title-tag">${titleMap[kind]}</div>${metaHtml}</div>
+    </div>
+    ${tableHtml}
+    ${totalHtml}
+    ${doc.note?`<div class="print-note-box">หมายเหตุ: ${esc(doc.note)}</div>`:''}
+    <div class="sign-grid">${signLabels.map(l=>`<div><div class="sign-line">${l}</div></div>`).join('')}</div>
+  `;
+}
+function printDocument(kind, doc){
+  document.getElementById('printArea').innerHTML = buildDocPrintHtml(kind, doc);
+  document.body.classList.add('printing');
+  setTimeout(()=>{ window.print(); }, 60);
+}
+window.addEventListener('afterprint', ()=> document.body.classList.remove('printing'));
+
+/* ตัวอย่างก่อนพิมพ์ — โชว์หน้าเอกสารในโมดัลก่อน แล้วให้เลือกว่าจะสั่งพิมพ์จริง หรือบันทึกเป็นรูปภาพแทน
+   (ใช้เนื้อหา HTML เดียวกับที่จะพิมพ์/แคปเจอร์ทุกประการ ย่อขนาดให้พอดีจอเพื่อดูตัวอย่าง) */
+function openPrintPreview(html, {title, onPrint, onImage, padding}={}){
+  openModal(`
+    <div class="modal-head"><h3>${esc(title||'ตัวอย่างก่อนพิมพ์')}</h3><button class="btn btn-ghost btn-icon" data-close-modal>${icon('close',16)}</button></div>
+    <div class="modal-body" style="padding:14px;">
+      <div id="pp_scale_wrap" style="overflow:auto;background:#d8d8d8;border-radius:8px;padding:10px;">
+        <div id="pp_inner" style="background:#fff;width:210mm;transform-origin:top center;box-shadow:0 2px 14px rgba(0,0,0,.25);margin:0 auto;">
+          <div style="font-family:'Prompt',sans-serif;color:#1B1B2F;padding:${padding||'14mm'};">${html}</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>ปิด</button>
+      <button class="btn btn-ghost" id="pp_image">${icon('download',15)}บันทึกเป็นรูปภาพ</button>
+      <button class="btn btn-primary" id="pp_print">${icon('print',15)}สั่งพิมพ์</button>
+    </div>
+  `, {large:true});
+  requestAnimationFrame(()=>{
+    const wrap = document.getElementById('pp_scale_wrap');
+    const inner = document.getElementById('pp_inner');
+    if(!wrap || !inner) return;
+    const naturalWidth = inner.offsetWidth;
+    // จำกัดการย่อไม่ให้เล็กกว่า 62% เพื่อให้ยังอ่านออกบนมือถือจอแคบ — ถ้าเนื้อหากว้างกว่าที่ย่อได้พอดี ให้เลื่อนดูแทนแทนที่จะย่อจนตัวหนังสือเล็กเกินไป
+    const scale = naturalWidth ? Math.max(0.62, Math.min(1, (wrap.clientWidth-20) / naturalWidth)) : 1;
+    inner.style.transform = `scale(${scale})`;
+    inner.style.marginInline = scale*naturalWidth <= wrap.clientWidth-20 ? 'auto' : '0';
+    wrap.style.height = Math.ceil(inner.offsetHeight*scale + 20) + 'px';
+  });
+  document.getElementById('pp_print').addEventListener('click', ()=>{ closeModal(); if(onPrint) onPrint(); });
+  document.getElementById('pp_image').addEventListener('click', ()=>{ closeModal(); if(onImage) onImage(); });
+}
+
+/* บันทึกเป็นรูปภาพ (PNG) — สำหรับมือถือที่กด "พิมพ์" แล้วไดอะล็อกพิมพ์ของเบราว์เซอร์ใช้งานไม่สะดวก
+   ใช้เนื้อหาแบบฟอร์มเดียวกับตอนพิมพ์ทุกประการ แต่ rasterize เป็นภาพแล้วส่งให้ผู้ใช้บันทึก/แชร์แทน */
+async function saveDocumentImage(kind, doc, mode){
+  if(typeof html2canvas==='undefined'){
+    toast('ไม่พร้อมใช้งานฟีเจอร์บันทึกรูปภาพในขณะนี้ ลองใช้ปุ่มพิมพ์แทน');
+    return;
+  }
+  const isMobile = mode==='mobile';
+  const area = document.getElementById('printArea');
+  area.innerHTML = buildDocPrintHtml(kind, doc);
+  area.classList.toggle('mobile-doc', isMobile);
+  document.body.classList.add('capturing');
+  await new Promise(r=> setTimeout(r, 80));
+  try{
+    const canvas = await html2canvas(area, {scale:2, backgroundColor:'#ffffff', useCORS:true});
+    document.body.classList.remove('capturing');
+    area.classList.remove('mobile-doc');
+    if(!downloadsApi){
+      toast('ไม่พบช่องทางบันทึกไฟล์ในเบราว์เซอร์นี้ ลองใช้ปุ่มพิมพ์แทน');
+      return;
+    }
+    const blob = await new Promise(resolve=> canvas.toBlob(resolve, 'image/png'));
+    if(!blob){ toast('สร้างรูปภาพไม่สำเร็จ'); return; }
+    await downloadsApi.save({filename:`${doc.docNo||kind}${isMobile?'-mobile':'-a4'}.png`, data: blob});
+    toast('บันทึกรูปภาพเรียบร้อย');
+  }catch(e){
+    document.body.classList.remove('capturing');
+    area.classList.remove('mobile-doc');
+    if(e && e.code==='declined') return;
+    console.error(e);
+    toast('เกิดข้อผิดพลาดในการสร้างรูปภาพ');
+  }
+}
+
+/* หลังบันทึกเอกสาร (ใบรับ/ใบเบิก/ใบคืน/ใบสั่งซื้อ) — ให้เลือกว่าจะพิมพ์ A4 หรือบันทึกเป็นรูปภาพ
+   ถ้าเลือกบันทึกรูปภาพ ให้เลือกต่อว่าจะเอาแบบสำหรับดูในมือถือ หรือแบบสัดส่วน A4 */
+function promptAfterSave(kind, doc, title){
+  openPrintPreview(buildDocPrintHtml(kind, doc), {
+    title: title || 'ตัวอย่างเอกสาร',
+    onPrint: ()=> printDocument(kind, doc),
+    onImage: ()=> chooseImageFormat(mode=> saveDocumentImage(kind, doc, mode)),
+  });
+}
+function chooseImageFormat(onChoose){
+  openModal(`
+    <div class="modal-head"><h3>เลือกรูปแบบรูปภาพ</h3><button class="btn btn-ghost btn-icon" data-close-modal>${icon('close',16)}</button></div>
+    <div class="modal-body" style="padding:16px;display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-ghost" id="imgfmt_mobile" style="justify-content:flex-start;padding:14px 16px;">
+        <div style="text-align:left;"><div style="font-weight:700;">สำหรับมือถือ</div><div class="subtle" style="font-size:12px;">ตัวอักษรใหญ่ อ่านง่ายบนหน้าจอโทรศัพท์ ไม่ต้องซูม</div></div>
+      </button>
+      <button class="btn btn-ghost" id="imgfmt_a4" style="justify-content:flex-start;padding:14px 16px;">
+        <div style="text-align:left;"><div style="font-weight:700;">ขนาด A4</div><div class="subtle" style="font-size:12px;">สัดส่วนตรงกับกระดาษพิมพ์จริง เหมาะสำหรับเก็บ/พิมพ์ภายหลัง</div></div>
+      </button>
+    </div>
+  `);
+  document.getElementById('imgfmt_mobile').addEventListener('click', ()=>{ closeModal(); onChoose('mobile'); });
+  document.getElementById('imgfmt_a4').addEventListener('click', ()=>{ closeModal(); onChoose('a4'); });
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+function initUserName(){
+  renderUserSelect();
+  document.getElementById('userNameSelect').addEventListener('change', (e)=>{
+    try{ localStorage.setItem('nlc_sticker_username', e.target.value); }catch(err){}
+  });
+}
+function applyThemeMode(mode){
+  if(mode!=='light' && mode!=='dim' && mode!=='dark') mode = 'light';
+  document.documentElement.setAttribute('data-theme', mode);
+  try{ localStorage.setItem('nlc_theme_mode', mode); }catch(e){}
+  document.querySelectorAll('#themeSwitch [data-theme-opt]').forEach(b=>{
+    b.classList.toggle('active', b.dataset.themeOpt===mode);
+  });
+}
+function initThemeSwitch(){
+  let mode = 'light';
+  try{ const saved = localStorage.getItem('nlc_theme_mode'); if(saved==='light'||saved==='dim'||saved==='dark') mode = saved; }catch(e){}
+  applyThemeMode(mode);
+  document.querySelectorAll('#themeSwitch [data-theme-opt]').forEach(b=>{
+    b.addEventListener('click', ()=> applyThemeMode(b.dataset.themeOpt));
+  });
+}
+document.getElementById('hamburgerBtn').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarBackdrop').classList.toggle('open');
+});
+document.getElementById('sidebarBackdrop').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+});
+
+onDataChange(()=>{ renderNav(); renderCurrentView(); renderUserSelect(); });
+initUserName();
+initThemeSwitch();
+renderNav();
+goTo('dashboard');
+initData();
+
+})();
+</script>
+</body>
+</html>
