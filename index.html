@@ -257,7 +257,7 @@
   tbody tr:last-child td{border-bottom:none;}
   tbody tr:hover{background:var(--surface-2);}
   td,th{text-align:right;}
-  td.left,th.left{text-align:right;}
+  td.left,th.left{text-align:left;}
   .num{font-variant-numeric:tabular-nums;}
   .sort-th-btn{border:none;background:none;padding:0;margin:0;cursor:pointer;font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;display:inline-flex;align-items:center;gap:4px;}
   .sort-th-btn:hover{color:var(--accent);}
@@ -313,9 +313,9 @@
   .mini-field label{margin-bottom:3px;white-space:nowrap;}
   .mini-readout{font-size:12.5px;color:var(--text-muted);align-self:center;padding-bottom:8px;flex:none;white-space:nowrap;}
   .mini-readout b{color:var(--text);}
-  .unit-toggle{display:inline-flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;flex:none;}
-  .unit-toggle .seg{padding:8px 12px;border:none;background:var(--surface);color:var(--text-muted);font-weight:600;font-size:12.5px;cursor:pointer;}
-  .unit-toggle .seg + .seg{border-inline-start:1px solid var(--border);}
+  .unit-toggle{display:inline-flex;flex-direction:column;border:1px solid var(--border);border-radius:7px;overflow:hidden;flex:none;}
+  .unit-toggle .seg{padding:6px 14px;border:none;background:var(--surface);color:var(--text-muted);font-weight:600;font-size:12.5px;cursor:pointer;white-space:nowrap;}
+  .unit-toggle .seg + .seg{border-inline-start:none;border-top:1px solid var(--border);}
   .unit-toggle .seg.active{background:var(--accent);color:var(--accent-contrast);}
   .chk{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-muted);padding-bottom:9px;cursor:pointer;user-select:none;}
   .chk input{width:auto;}
@@ -406,6 +406,8 @@
   @media print{
     body.printing > .app{display:none;}
     body.printing > #printArea{display:block;}
+    table.print-table tr{break-inside:avoid;}
+    .sign-grid{break-inside:avoid;}
   }
   /* Off-screen render used only to rasterize #printArea into a PNG (for
      mobile "save as image", where the print dialog is unreliable). */
@@ -422,6 +424,36 @@
   #printArea.mobile-doc .count-sheet table.print-table th,#printArea.mobile-doc .count-sheet table.print-table td{font-size:10.5px;padding:4px 5px;}
   #printArea.mobile-doc .sign-grid{grid-template-columns:1fr;gap:10px;margin-top:26px;}
   #printArea.mobile-doc .sign-line{margin-top:24px;}
+
+  /* รูปแบบใหม่สำหรับ "บันทึกรูปมือถือ" ของเอกสาร (ใบสั่งซื้อ/ใบรับ/ใบเบิก/ใบคืน)
+     ดีไซน์เป็นใบเสร็จ/สรุปยอดแนวตั้ง อ่านง่ายบนจอมือถือ แยกจากฟอร์ม A4 ที่ใช้พิมพ์จริง */
+  /* display:flex + flex-direction:column ทำให้ .mr-sign (margin-top:auto) ถูกดันไปชิดขอบล่างสุด
+     เสมอ ไม่ว่ารายการจะสั้นหรือยาว การ์ดจึงขยายเต็มความสูงที่ตั้งไว้แทนที่จะลอยอยู่กลางภาพ
+     พร้อมพื้นที่ว่างเหลือด้านบน/ล่างเหมือนเดิม (ดู minHeight ที่ตั้งจาก JS ก่อน capture) */
+  .mobile-receipt{border:2px solid #241F1A;border-radius:14px;padding:20px 18px;display:flex;flex-direction:column;}
+  /* หัวเอกสารแบบ 2 คอลัมน์ (เหมือนหัวฟอร์ม A4): โลโก้/ชื่อบริษัทชิดซ้าย, ชื่อเอกสาร+ข้อมูลอ้างอิงชิดขวา */
+  .mobile-receipt .mr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex:none;}
+  .mobile-receipt .mr-brand-block{text-align:left;}
+  .mobile-receipt .mr-meta-block{text-align:right;}
+  .mobile-receipt .mr-brand{font-size:16px;font-weight:700;color:#241F1A;text-align:left;line-height:1.25;}
+  .mobile-receipt .mr-sub{font-size:11px;color:#777;text-align:left;margin-top:3px;}
+  .mobile-receipt .mr-title{font-family:'Prompt',sans-serif;font-size:15px;font-weight:700;color:#E96F16;text-align:right;margin:0 0 6px;}
+  .mobile-receipt .mr-divider{border:none;border-top:2px solid #241F1A;margin:14px 0;flex:none;}
+  .mobile-receipt .mr-divider-dashed{border:none;border-top:1.5px dashed #ccc;margin:10px 0;flex:none;}
+  .mobile-receipt .mr-meta{text-align:right;}
+  .mobile-receipt .mr-meta div{font-size:11.5px;margin-bottom:4px;color:#333;}
+  .mobile-receipt .mr-meta b{color:#1B1B2F;}
+  .mobile-receipt .mr-section-title{font-size:13.5px;font-weight:700;color:#241F1A;margin-bottom:10px;}
+  .mobile-receipt .mr-item{padding:6px 0;}
+  .mobile-receipt .mr-item-name{font-size:13.5px;font-weight:700;color:#1B1B2F;margin-bottom:8px;}
+  .mobile-receipt .mr-item-name .mr-item-code{font-weight:500;color:#888;font-size:12px;}
+  .mobile-receipt .mr-item-row{display:flex;align-items:center;gap:14px;}
+  .mobile-receipt .mr-item-qty{font-size:13.5px;font-weight:600;color:#333;}
+  .mobile-receipt .mr-summary-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#333;margin-bottom:6px;}
+  .mobile-receipt .mr-summary-total{display:flex;justify-content:space-between;gap:10px;font-size:16px;font-weight:700;color:#241F1A;margin-top:8px;}
+  .mobile-receipt .mr-sign{text-align:center;margin-top:auto;padding-top:24px;font-size:13px;color:#333;line-height:1.7;flex:none;}
+  .mobile-receipt .mr-sign .mr-sign-line{border-top:1px solid #333;width:70%;margin:0 auto 8px;}
+  #printArea.mobile-doc .mobile-receipt{padding:16px 14px;}
 
   /* ===== Google sign-in gate ===== */
   .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
@@ -531,7 +563,7 @@ const ICONS = {
   adjust:'<path d="M4 6h10M4 12h16M4 18h7" stroke-linecap="round"/><path d="m17 4 3 2-3 2M14 16l3 2-3 2" stroke-linecap="round" stroke-linejoin="round"/>',
   adjustpm:'<circle cx="7" cy="12" r="5.2"/><path d="M7 9.3v5.4M4.3 12h5.4" stroke-linecap="round"/><circle cx="17" cy="12" r="5.2"/><path d="M14.3 12h5.4" stroke-linecap="round"/>'
 };
-function icon(name,size=18){return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8">${ICONS[name]||''}</svg>`;}
+function icon(name,size=18,extraStyle=''){return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8"${extraStyle?` style="${extraStyle}"`:''}>${ICONS[name]||''}</svg>`;}
 
 /* =========================================================
    CATALOG SEED (from NLCoffee sticker SOP)
@@ -1346,7 +1378,7 @@ function renderStock(){
             <td style="white-space:nowrap;">
               <div style="display:flex;flex-direction:column;gap:2px;">
                 <button class="btn btn-ghost btn-sm btn-icon" data-edit-sticker="${s.id}" title="แก้ไข">${icon('edit',15)}</button>
-                <button class="btn btn-ghost btn-sm btn-icon" data-adjust="${s.id}" title="ปรับปรุงสต็อก">${icon('adjustpm',15)}</button>
+                <button class="btn btn-ghost btn-sm btn-icon" data-adjust="${s.id}" title="ปรับปรุงสต็อก">${icon('adjustpm',15,'width:13px;height:13px;')}</button>
               </div>
             </td>
             <td class="left mono" style="font-size:12px;">
@@ -1625,8 +1657,35 @@ function renderReceive(opts){
   document.getElementById('r_reset').addEventListener('click', ()=>{ receiveLines=[freshReceiveLine()]; receivePoRef=null; renderReceive(); });
   document.getElementById('r_submit').addEventListener('click', submitReceive);
 }
+/* ป้องกันปัญหาช่องกรอกตัวเลขเสียโฟกัสทุกครั้งที่พิมพ์ 1 หลัก (เพราะฟังก์ชัน renderXxxLines()
+   สร้าง innerHTML ใหม่ทั้งก้อนทุกครั้งที่มีการพิมพ์ ทำให้ input เดิมถูกถอดออกจาก DOM)
+   จึงต้องจำไว้ก่อนว่ากำลังโฟกัส/เลือกช่วงตัวอักษรไหนอยู่ แล้วคืนโฟกัสกลับหลัง render เสร็จ */
+function captureLineFocus(wrap){
+  const active = document.activeElement;
+  if(!active || !wrap || !wrap.contains(active) || !active.dataset || !active.dataset.f) return null;
+  const line = active.closest('[data-line]');
+  if(!line) return null;
+  return { lineKey: line.dataset.line, field: active.dataset.f, start: active.selectionStart, end: active.selectionEnd };
+}
+function restoreLineFocus(wrap, saved){
+  if(!saved) return;
+  const row = wrap.querySelector(`[data-line="${saved.lineKey}"]`);
+  const el = row && row.querySelector(`[data-f="${saved.field}"]`);
+  if(!el) return;
+  el.focus();
+  if(el.type==='number'){
+    // input[type=number] ไม่รองรับ setSelectionRange (บาง browser ขึ้น error) — ใช้วิธี set ค่าซ้ำ
+    // เพื่อดันเคอร์เซอร์ไปท้ายสุดของค่าแทน (ผู้ใช้พิมพ์ต่อได้ทันทีโดยไม่มีตัวเลขแทรกกลับไปข้างหน้า)
+    const v = el.value;
+    el.value = '';
+    el.value = v;
+  }else if(typeof saved.start==='number' && el.setSelectionRange){
+    try{ el.setSelectionRange(saved.start, saved.end); }catch(e){}
+  }
+}
 function renderReceiveLines(){
   const wrap = document.getElementById('r_lines');
+  const _savedFocus = captureLineFocus(wrap);
   const opts = stickerOptionsHtml();
   wrap.innerHTML = `
     <div class="line-item-row head receive-cols"><div>สติ๊กเกอร์</div><div>หน่วย</div><div>จำนวน</div><div>ดวงเกิน/ขาด (ถ้ามี)</div><div></div></div>
@@ -1679,6 +1738,7 @@ function renderReceiveLines(){
       renderReceiveLines();
     });
   });
+  restoreLineFocus(wrap, _savedFocus);
 }
 function estimateReceiveUnitCost(sticker, pieces){
   // Internal-only costing (never shown on the receive form or printed receipt):
@@ -1779,8 +1839,14 @@ function renderIssueForm(){
         <button class="btn btn-primary" id="i_submit">${icon('issue',16)}บันทึกใบเบิก</button>
       </div>
     </div>
+    <div class="card card-pad" style="margin-top:14px;">
+      <div class="section-title" style="margin-top:0;">ใบเบิกล่าสุด</div>
+      <div class="section-desc">5 รายการล่าสุดที่เคยบันทึกไว้</div>
+      <div id="i_recentWrap"></div>
+    </div>
   `;
   renderIssueLines();
+  renderIssueRecent();
   document.getElementById('i_kind').addEventListener('change', e=>{
     issueKind = e.target.value;
     document.getElementById('i_refdoc_wrap').style.display = issueKind==='extra' ? '' : 'none';
@@ -1791,6 +1857,7 @@ function renderIssueForm(){
 }
 function renderIssueLines(){
   const wrap = document.getElementById('i_lines');
+  const _savedFocus = captureLineFocus(wrap);
   const stockMap = computeStockMap();
   const opts = activeStickers().map(s=>{
     const cur = stockMap[s.id]?.stock||0;
@@ -1832,6 +1899,22 @@ function renderIssueLines(){
       renderIssueLines();
     });
   });
+  restoreLineFocus(wrap, _savedFocus);
+}
+/* รายการใบเบิก 5 รายการล่าสุด แสดงไว้ด้านล่างฟอร์มเบิกสติ๊กเกอร์ ให้ดูย้อนหลังได้ทันทีโดยไม่ต้อง
+   ไปที่หน้า "เอกสารทั้งหมด" */
+function renderIssueRecent(){
+  const wrap = document.getElementById('i_recentWrap');
+  if(!wrap) return;
+  const list = cache.requisitions.slice().sort((a,b)=>(b.createdAt||'').localeCompare(a.createdAt||'')).slice(0,5);
+  if(list.length===0){ wrap.innerHTML = `<div class="empty-state">${icon('docs',26)}<div>ยังไม่มีใบเบิกที่บันทึกไว้</div></div>`; return; }
+  wrap.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="left">เลขที่ใบเบิก</th><th class="left">วันที่</th><th class="left">ผู้เบิก</th><th>จำนวนรายการ</th><th></th></tr></thead><tbody>
+    ${list.map(d=>`<tr><td class="left mono" style="font-size:12px;">${esc(d.docNo)}</td><td class="left">${thaiDate(d.date)}</td><td class="left">${esc(d.issuedBy||'-')}</td><td class="num">${(d.items||[]).length}</td><td style="white-space:nowrap;"><button class="btn btn-ghost btn-sm" data-recent-print="${d.id}">${icon('print',14)}พิมพ์</button></td></tr>`).join('')}
+  </tbody></table></div>`;
+  wrap.querySelectorAll('[data-recent-print]').forEach(b=> b.addEventListener('click', ()=>{
+    const d = cache.requisitions.find(x=>x.id===b.dataset.recentPrint);
+    if(d) openPrintPreview(buildDocPrintHtml('requisition', d), {title:'ตัวอย่างใบเบิก', onPrint:()=>printDocument('requisition',d), onImage:()=>chooseImageFormat(mode=>saveDocumentImage('requisition',d,mode))});
+  }));
 }
 async function submitIssue(){
   if(!requireActiveUser()) return;
@@ -1913,6 +1996,7 @@ function renderReturnForm(){
 }
 function renderReturnLines(){
   const wrap = document.getElementById('rt_lines');
+  const _savedFocus = captureLineFocus(wrap);
   const opts = activeStickers().map(s=> `<option value="${s.id}">${esc(stickerLabel(s))}</option>`).join('');
   wrap.innerHTML = returnLines.map(line=>{
     const s = stickerById(line.stickerId);
@@ -1944,6 +2028,7 @@ function renderReturnLines(){
       renderReturnLines();
     });
   });
+  restoreLineFocus(wrap, _savedFocus);
 }
 async function submitReturn(){
   if(!requireActiveUser()) return;
@@ -2114,6 +2199,7 @@ function openPOModal(existing, presetStickerId){
 }
 function renderPOLines(){
   const wrap = document.getElementById('po_lines');
+  const _savedFocus = captureLineFocus(wrap);
   const settings = getSettings();
   const opts = stickerOptionsHtml();
   const vatChecked = document.getElementById('po_vat')?.checked ?? true;
@@ -2165,6 +2251,7 @@ function renderPOLines(){
       renderPOLines();
     });
   });
+  restoreLineFocus(wrap, _savedFocus);
 }
 async function submitPO(){
   if(!requireActiveUser()) return;
@@ -2739,7 +2826,7 @@ async function importOldStickerData(){
 /* =========================================================
    PRINTING
 ========================================================= */
-function buildDocPrintHtml(kind, doc){
+function buildDocPrintHtml(kind, doc, opts={}){
   const settings = getSettings();
   const titleMap = {receipt:'ใบรับสติ๊กเกอร์', requisition:'ใบเบิกสติ๊กเกอร์', return:'ใบคืนสติ๊กเกอร์', po:'ใบสั่งซื้อสติ๊กเกอร์'};
   const items = doc.items||[];
@@ -2792,9 +2879,137 @@ function buildDocPrintHtml(kind, doc){
     ${tableHtml}
     ${totalHtml}
     ${doc.note?`<div class="print-note-box">หมายเหตุ: ${esc(doc.note)}</div>`:''}
-    <div class="sign-grid">${signLabels.map(l=>`<div><div class="sign-line">${l}</div></div>`).join('')}</div>
+    ${opts.hideSignatures ? '' : `<div class="sign-grid">${signLabels.map(l=>`<div><div class="sign-line">${l}</div></div>`).join('')}</div>`}
   `;
 }
+
+/* รูปสินค้าสี่เหลี่ยมจัตุรัสสำหรับแต่ละรายการในใบเสร็จมือถือ — สีพื้นคงที่ (ไม่ใช้ตัวแปรสีตามธีม)
+   เพราะใบเสร็จมือถือใช้โทนขาว-ดำตายตัวเหมือนตอนพิมพ์จริง ไม่ผูกกับธีมที่ผู้ใช้เลือกไว้ */
+function mobileReceiptThumbHtml(s, size){
+  size = size||52;
+  if(s && s.imageUrl){
+    return `<img src="${esc(s.imageUrl)}" style="width:${size}px;height:${size}px;border-radius:8px;object-fit:cover;border:1px solid #ccc;flex:none;">`;
+  }
+  return `<div style="width:${size}px;height:${size}px;border-radius:8px;background:#f2f2f2;border:1px solid #ccc;display:flex;align-items:center;justify-content:center;color:#aaa;flex:none;">${icon('stock',Math.round(size*0.45))}</div>`;
+}
+
+/* เอกสารสำหรับ "บันทึกรูปมือถือ" — ดีไซน์ใหม่เป็นสไตล์ใบเสร็จ/สรุปยอดแนวตั้ง
+   (ต่างจาก buildDocPrintHtml ที่เป็นตารางแบบฟอร์ม A4 สำหรับพิมพ์จริง)
+   อ่านง่ายบนจอมือถือโดยไม่ต้องซูม และมีลายเซ็นเดียว (ผู้อนุมัติ) แทน 3 ช่องแบบฟอร์ม A4 */
+function buildMobileReceiptHtml(kind, doc){
+  const settings = getSettings();
+  const titleMap = {receipt:'ใบรับสติ๊กเกอร์', requisition:'ใบเบิกสติ๊กเกอร์', return:'ใบคืนสติ๊กเกอร์', po:'ใบสั่งซื้อสติ๊กเกอร์'};
+  const itemsLabelMap = {receipt:'รายการที่รับเข้า', requisition:'รายการที่เบิก', return:'รายการที่คืน', po:'รายการสั่งพิมพ์'};
+  const items = doc.items||[];
+  const unitLabel = it => it.unit==='SHEET' ? `${num(it.enteredQty)} แผ่น` : `${num(it.enteredQty??it.qty)} ดวง`;
+
+  let metaRows = [];
+  let signLabels = ['ผู้จัดทำ','ผู้ตรวจสอบ','ผู้อนุมัติ'];
+  if(kind==='receipt'){
+    metaRows = [
+      `เลขที่: <b>${esc(doc.docNo)}</b>`,
+      `วันที่: ${thaiDate(doc.date)}`,
+      `ผู้จำหน่าย: ${esc(doc.supplier||'-')}`,
+      doc.poRef ? `อ้างอิงใบสั่งซื้อ: ${esc(doc.poRef)}` : ''
+    ];
+    signLabels = ['ผู้ส่งของ','ผู้ตรวจนับ','ผู้รับของ'];
+  } else if(kind==='requisition'){
+    metaRows = [
+      `เลขที่: <b>${esc(doc.docNo)}</b>`,
+      `วันที่: ${thaiDate(doc.date)}`,
+      `ผู้เบิก: ${esc(doc.issuedBy||'-')}`,
+      doc.kind==='extra' ? `ประเภท: เบิกเพิ่มพิเศษ${doc.refDocNo?` (อ้างอิง ${esc(doc.refDocNo)})`:''}` : ''
+    ];
+    signLabels = ['ผู้เบิก','ผู้จ่ายของ','ผู้อนุมัติ'];
+  } else if(kind==='return'){
+    metaRows = [
+      `เลขที่: <b>${esc(doc.docNo)}</b>`,
+      `วันที่: ${thaiDate(doc.date)}`,
+      `เหตุผล: ${esc(doc.reason||'-')}`,
+      doc.refDocNo ? `อ้างอิงใบเบิกเลขที่: ${esc(doc.refDocNo)}` : ''
+    ];
+    signLabels = ['ผู้คืนของ','ผู้ตรวจรับคืน','ผู้อนุมัติ'];
+  } else if(kind==='po'){
+    metaRows = [
+      `เลขที่: <b>${esc(doc.docNo)}</b>`,
+      `วันที่: ${thaiDate(doc.date)}${doc.expectedDate?` | กำหนดรับ: ${thaiDate(doc.expectedDate)}`:''}`,
+      `ผู้จำหน่าย: ${esc(doc.supplier||'-')}`,
+      doc.contact ? `ติดต่อ: ${esc(doc.contact)}` : ''
+    ];
+    signLabels = ['ผู้จัดทำ PO','ผู้อนุมัติสั่งซื้อ','ผู้จำหน่าย'];
+  }
+  metaRows = metaRows.filter(Boolean);
+  const signLabel = signLabels.find(l=>l.includes('อนุมัติ')) || signLabels[signLabels.length-1];
+  // ใบสั่งซื้อ: ใส่ชื่อผู้ใช้งานที่กรอกฟอร์ม (ผู้จัดทำ) ไว้ในช่องผู้อนุมัติสั่งซื้อให้เลย แทนที่จะเว้นว่าง
+  const signerName = kind==='po' ? (doc.createdBy||'') : '';
+
+  const itemsHtml = items.map((it,i)=>{
+    const s = stickerById(it.stickerId);
+    const code = it.code || s?.code || '-';
+    return `
+    <div class="mr-item">
+      <div class="mr-item-name">[${i+1}] ${esc(it.name)} <span class="mr-item-code">(${esc(code)})</span></div>
+      <div class="mr-item-row">
+        ${mobileReceiptThumbHtml(s, 52)}
+        <span class="mr-item-qty">จำนวน: ${kind==='po'?`${num(it.qty)} แผ่น`:unitLabel(it)}</span>
+      </div>
+    </div>
+    ${i<items.length-1?'<hr class="mr-divider-dashed">':''}
+  `;
+  }).join('');
+
+  let summaryHtml = '';
+  if(kind==='po'){
+    const sheetsTotal = items.reduce((s,i)=>s+(Number(i.qty)||0),0);
+    const hasPrice = (Number(doc.subtotal)||0) > 0;
+    if(hasPrice){
+      const vatAmt = doc.vatApplied ? (Number(doc.total)||0) - (Number(doc.subtotal)||0) : 0;
+      summaryHtml = `
+        <div class="mr-summary-row"><span>รวมจำนวนแผ่น:</span><span>${num(sheetsTotal)} แผ่น</span></div>
+        <div class="mr-summary-row"><span>ยอดก่อน VAT:</span><span>${thb(doc.subtotal)}</span></div>
+        ${doc.vatApplied?`<div class="mr-summary-row"><span>VAT ${Math.round(settings.vatRate*100)}%:</span><span>${thb(vatAmt)}</span></div>`:''}
+        <hr class="mr-divider-dashed">
+        <div class="mr-summary-total"><span>รวมเป็นเงินทั้งสิ้น${doc.vatApplied?' (รวม VAT)':''}:</span><span>${thb(doc.total)}</span></div>
+      `;
+    } else {
+      summaryHtml = `
+        <div class="mr-summary-row"><span>รวมจำนวนแผ่น:</span><span>${num(sheetsTotal)} แผ่น</span></div>
+        <div class="mr-summary-row" style="color:#999;"><span>ยังไม่ระบุราคา</span><span></span></div>
+      `;
+    }
+  } else {
+    const piecesTotal = items.reduce((s,it)=> s + (Number(it.qty)||0), 0);
+    summaryHtml = `<div class="mr-summary-row"><span>รวม ${items.length} รายการ</span><span>${num(piecesTotal)} ดวง</span></div>`;
+  }
+
+  return `
+  <div class="mobile-receipt">
+    <div class="mr-head">
+      <div class="mr-brand-block">
+        <div class="mr-brand">${esc(settings.companyName)}</div>
+        <div class="mr-sub">ระบบจัดการสติ๊กเกอร์</div>
+      </div>
+      <div class="mr-meta-block">
+        <div class="mr-title">${titleMap[kind]}</div>
+        <div class="mr-meta">${metaRows.map(r=>`<div>${r}</div>`).join('')}</div>
+      </div>
+    </div>
+    <hr class="mr-divider">
+    <div class="mr-section-title">${itemsLabelMap[kind]} (ทั้งหมด ${items.length} รายการ)</div>
+    ${itemsHtml}
+    <hr class="mr-divider">
+    <div class="mr-section-title">สรุปยอดรวม</div>
+    ${summaryHtml}
+    <hr class="mr-divider">
+    <div class="mr-sign">
+      <div class="mr-sign-line"></div>
+      ${esc(signLabel)}${signerName?`<br>( ${esc(signerName)} )`:''}<br>วันที่: ___ / ___ / _____
+    </div>
+    ${doc.note?`<div class="print-note-box" style="margin-top:14px;">หมายเหตุ: ${esc(doc.note)}</div>`:''}
+  </div>
+  `;
+}
+
 function printDocument(kind, doc){
   document.getElementById('printArea').innerHTML = buildDocPrintHtml(kind, doc);
   document.body.classList.add('printing');
@@ -2809,7 +3024,7 @@ function openPrintPreview(html, {title, onPrint, onImage, padding}={}){
     <div class="modal-head"><h3>${esc(title||'ตัวอย่างก่อนพิมพ์')}</h3><button class="btn btn-ghost btn-icon" data-close-modal>${icon('close',16)}</button></div>
     <div class="modal-body" style="padding:14px;">
       <div id="pp_scale_wrap" style="overflow:auto;background:#d8d8d8;border-radius:8px;padding:10px;">
-        <div id="pp_inner" style="background:#fff;width:210mm;transform-origin:top center;box-shadow:0 2px 14px rgba(0,0,0,.25);margin:0 auto;">
+        <div id="pp_inner" style="background:#fff;width:210mm;min-height:297mm;position:relative;transform-origin:top center;box-shadow:0 2px 14px rgba(0,0,0,.25);margin:0 auto;">
           <div style="font-family:'Prompt',sans-serif;color:#1B1B2F;padding:${padding||'14mm'};">${html}</div>
         </div>
       </div>
@@ -2824,6 +3039,23 @@ function openPrintPreview(html, {title, onPrint, onImage, padding}={}){
     const wrap = document.getElementById('pp_scale_wrap');
     const inner = document.getElementById('pp_inner');
     if(!wrap || !inner) return;
+    // จำลองการตัดหน้ากระดาษ A4 (297mm) — ถ้าเนื้อหายาวเกิน 1 แผ่น ให้ตีเส้นประ + เลขหน้าไว้ทุกๆ 297mm
+    // เฉพาะในหน้าต่างตัวอย่างนี้เท่านั้น (การสั่งพิมพ์จริงใช้ระบบแบ่งหน้าของเบราว์เซอร์เอง และรูปภาพที่บันทึกจะไม่มีเส้นนี้)
+    inner.querySelectorAll('.pp-page-break').forEach(n=> n.remove());
+    inner.style.minHeight = '297mm';
+    const pagePx = 297 * (96/25.4);
+    const contentPx = inner.scrollHeight;
+    const pageCount = Math.max(1, Math.ceil((contentPx-1) / pagePx));
+    if(pageCount > 1){
+      for(let i=1;i<pageCount;i++){
+        const marker = document.createElement('div');
+        marker.className = 'pp-page-break';
+        marker.style.cssText = `position:absolute;left:0;right:0;top:${Math.round(pagePx*i)}px;border-top:2px dashed #bbb;`;
+        marker.innerHTML = `<span style="position:absolute;top:4px;right:8px;font-size:10px;color:#999;background:#fff;padding:0 4px;">ตัดหน้า — หน้า ${i+1}</span>`;
+        inner.appendChild(marker);
+      }
+    }
+    inner.style.minHeight = (pagePx*pageCount) + 'px';
     const naturalWidth = inner.offsetWidth;
     // จำกัดการย่อไม่ให้เล็กกว่า 62% เพื่อให้ยังอ่านออกบนมือถือจอแคบ — ถ้าเนื้อหากว้างกว่าที่ย่อได้พอดี ให้เลื่อนดูแทนแทนที่จะย่อจนตัวหนังสือเล็กเกินไป
     const scale = naturalWidth ? Math.max(0.62, Math.min(1, (wrap.clientWidth-20) / naturalWidth)) : 1;
@@ -2835,8 +3067,28 @@ function openPrintPreview(html, {title, onPrint, onImage, padding}={}){
   document.getElementById('pp_image').addEventListener('click', ()=>{ closeModal(); if(onImage) onImage(); });
 }
 
+/* ปรับภาพที่ capture มาให้เป็นสัดส่วนแนวตั้ง 9:16 เป็นอย่างน้อย (สำหรับโหมด "สำหรับมือถือ")
+   - เนื้อหาสั้นกว่ากรอบ: จัดกึ่งกลางแนวตั้ง เว้นขอบขาวบน-ล่างเท่ากัน — กว้างเท่าเนื้อหาเสมอ ไม่มีขอบดำ/ขาวข้าง
+   - เนื้อหายาวเกินกรอบ: "ไม่ย่อ" ให้ปล่อยภาพสูงเกิน 9:16 ไปเลย (เหมือนภาพหน้าจอมือถือที่ยาวกว่าปกติ)
+     แทนที่จะย่อทั้งภาพให้พอดีความสูงแล้วเหลือขอบดำ/ขาวด้านข้าง เพราะทำให้ตัวหนังสือเล็กลงและดูไม่เต็มขอบ */
+function composeMobileCanvas(sourceCanvas){
+  const targetW = sourceCanvas.width;
+  const targetH = Math.round(targetW * 16 / 9);
+  const finalH = Math.max(targetH, sourceCanvas.height);
+  const out = document.createElement('canvas');
+  out.width = targetW;
+  out.height = finalH;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, targetW, finalH);
+  const offsetY = sourceCanvas.height < finalH ? Math.round((finalH - sourceCanvas.height) / 2) : 0;
+  ctx.drawImage(sourceCanvas, 0, offsetY);
+  return out;
+}
+
 /* บันทึกเป็นรูปภาพ (PNG) — สำหรับมือถือที่กด "พิมพ์" แล้วไดอะล็อกพิมพ์ของเบราว์เซอร์ใช้งานไม่สะดวก
-   ใช้เนื้อหาแบบฟอร์มเดียวกับตอนพิมพ์ทุกประการ แต่ rasterize เป็นภาพแล้วส่งให้ผู้ใช้บันทึก/แชร์แทน */
+   ใช้เนื้อหาแบบฟอร์มเดียวกับตอนพิมพ์ทุกประการ แต่ rasterize เป็นภาพแล้วส่งให้ผู้ใช้บันทึก/แชร์แทน
+   โหมด "มือถือ" จะจัดองค์ประกอบใหม่ให้เป็นภาพแนวตั้งสัดส่วน 9:16 */
 async function saveDocumentImage(kind, doc, mode){
   if(typeof html2canvas==='undefined'){
     toast('ไม่พร้อมใช้งานฟีเจอร์บันทึกรูปภาพในขณะนี้ ลองใช้ปุ่มพิมพ์แทน');
@@ -2844,10 +3096,20 @@ async function saveDocumentImage(kind, doc, mode){
   }
   const isMobile = mode==='mobile';
   const area = document.getElementById('printArea');
-  area.innerHTML = buildDocPrintHtml(kind, doc);
+  area.innerHTML = isMobile ? buildMobileReceiptHtml(kind, doc) : buildDocPrintHtml(kind, doc, {hideSignatures:true});
   area.classList.toggle('mobile-doc', isMobile);
   document.body.classList.add('capturing');
   await new Promise(r=> setTimeout(r, 80));
+  if(isMobile){
+    // ดันการ์ดใบเสร็จให้ยืดสูงเกือบเต็มกรอบ 9:16 ก่อน capture (แทนที่จะปล่อยให้เนื้อหาสั้น
+    // ลอยอยู่กลางภาพแล้วมีขอบขาวเหลือเยอะด้านบน-ล่าง) — ลายเซ็นด้านล่างจะถูกดันชิดขอบล่างตาม
+    const card = area.querySelector('.mobile-receipt');
+    if(card){
+      const w = card.getBoundingClientRect().width;
+      if(w) card.style.minHeight = Math.round(w * 16 / 9) + 'px';
+    }
+    await new Promise(r=> setTimeout(r, 30));
+  }
   try{
     const canvas = await html2canvas(area, {scale:2, backgroundColor:'#ffffff', useCORS:true});
     document.body.classList.remove('capturing');
@@ -2856,7 +3118,8 @@ async function saveDocumentImage(kind, doc, mode){
       toast('ไม่พบช่องทางบันทึกไฟล์ในเบราว์เซอร์นี้ ลองใช้ปุ่มพิมพ์แทน');
       return;
     }
-    const blob = await new Promise(resolve=> canvas.toBlob(resolve, 'image/png'));
+    const finalCanvas = isMobile ? composeMobileCanvas(canvas) : canvas;
+    const blob = await new Promise(resolve=> finalCanvas.toBlob(resolve, 'image/png'));
     if(!blob){ toast('สร้างรูปภาพไม่สำเร็จ'); return; }
     await downloadsApi.save({filename:`${doc.docNo||kind}${isMobile?'-mobile':'-a4'}.png`, data: blob});
     toast('บันทึกรูปภาพเรียบร้อย');
