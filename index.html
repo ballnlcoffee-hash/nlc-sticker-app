@@ -130,6 +130,7 @@
   ::selection{background:var(--accent-soft);}
 
   .app{display:flex;min-height:100vh;}
+  .app[hidden]{display:none;}
 
   /* ---------- Sidebar ---------- */
   .sidebar{
@@ -420,6 +421,7 @@
 
   /* ===== Google sign-in gate ===== */
   .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
+  .auth-gate[hidden]{display:none;}
   .auth-card{max-width:360px;width:100%;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px 28px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.08);}
   .auth-card .brand-name{font-size:20px;font-weight:700;margin-bottom:2px;color:var(--text);}
   .auth-card .brand-sub{color:var(--text-muted);font-size:13px;margin-bottom:24px;}
