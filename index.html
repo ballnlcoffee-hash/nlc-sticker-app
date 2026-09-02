@@ -645,12 +645,8 @@ function renderLoginScreen(){
   `);
   document.getElementById('googleSignInBtn').addEventListener('click', ()=>{
     const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(err=>{
-      if(err && (err.code==='auth/popup-blocked' || err.code==='auth/cancelled-popup-request' || err.code==='auth/operation-not-supported-in-this-environment')){
-        auth.signInWithRedirect(provider);
-      } else if(err && err.code!=='auth/popup-closed-by-user'){
-        alert('เข้าสู่ระบบไม่สำเร็จ: '+err.message);
-      }
+    auth.signInWithRedirect(provider).catch(err=>{
+      alert('เข้าสู่ระบบไม่สำเร็จ: '+err.message);
     });
   });
 }
@@ -737,6 +733,9 @@ async function initData(){
   }
 
   dbApi = firebase.firestore();
+  auth.getRedirectResult().catch(err=>{
+    if(err && err.code) alert('เข้าสู่ระบบไม่สำเร็จ: '+(err.message||err.code));
+  });
   auth.onAuthStateChanged(user=>{
     stopFirestoreSync();
     if(user){ checkAccessAndBoot(user); }
