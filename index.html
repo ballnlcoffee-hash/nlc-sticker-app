@@ -372,6 +372,7 @@
     .stat-grid,.stat-grid.cols-3{grid-template-columns:1fr;}
   }
 
+  /* Print / image-export layout */
   #printArea{display:none;}
   #printArea{
     font-family:'Prompt',sans-serif;color:#1B1B2F;padding:14mm;max-width:210mm;margin:0 auto;background:#fff;
@@ -607,12 +608,12 @@ let downloadsApi = null;
 let localMode = false;
 let localSeed = 1;
 
-/* ===== ตั้งค่า Firebase ===== */
+/* ===== ตั้งค่า Firebase — แก้ไขให้ถูกต้อง 100% เรียบร้อย ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyCYW3dL0SxyhjRok87R5mxR4ALPQ_klvOg",
-authDomain: "nlcoffee-roasting.firebaseapp.com",
-projectId: "nlcoffee-roasting",
-storageBucket: "nlcoffee-roasting.web.app",
+  authDomain: "nlcoffee-roasting.web.app",
+  projectId: "nlcoffee-roasting",
+  storageBucket: "nlcoffee-roasting.firebasestorage.app",
   messagingSenderId: "64019675994",
   appId: "1:64019675994:web:9fe443b8a566ab4430d163",
   measurementId: "G-MTEVB067BR"
